@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Wallet UI for Uqbar
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The wallet UI for the Uqbar wallet.
 
 ## Available Scripts
 
