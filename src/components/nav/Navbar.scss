@@ -2,7 +2,7 @@
 
 .navbar {
   margin: 16px 16px 0px;
-  width: 100%;
+  width: calc(100% - 32px);
   border-bottom: 2px solid rgba(colors.$uq-pink, 0.3);
 
   .nav-link {

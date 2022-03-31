@@ -1,1 +1,1 @@
-export const displayPubKey = (pubKey: string) => pubKey.replace(/\./g, '').slice(0, 6) + '...' + pubKey.replace(/\./g, '').slice(-4)
+export const displayPubKey = (pubKey: string) => pubKey.slice(0, 6) + '...' + pubKey.slice(-4)

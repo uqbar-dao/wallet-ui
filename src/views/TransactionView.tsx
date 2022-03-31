@@ -1,7 +1,7 @@
 import React from 'react'
 
-const Navbar = () => {
+const TransactionView = () => {
   return null
 }
 
-export default Navbar
+export default TransactionView

@@ -1,0 +1,9 @@
+@use '../../styles/colors.scss' as colors;
+
+.account-display {
+  padding: 8px 16px;
+  margin: 16px 0px;
+  background: colors.$washed-gray;
+  border-radius: 4px;
+  max-width: 600px;
+}
