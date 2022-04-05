@@ -1,14 +1,19 @@
 button.button {
   color: black;
+  background: white;
   width: fit-content;
   font-size: 16px;
   padding: 8px 16px;
   border-radius: 4px;
   border: 1px solid black;
-  background: none;
   cursor: pointer;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.03);
+    opacity: 0.7;
+  }
+
+  &.dark {
+    color: white;
+    background: black;
   }
 }

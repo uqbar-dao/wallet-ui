@@ -29,7 +29,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
         </Row>
         <Row>
           <Text>{formatAmount(balance)}</Text>
-          <Button onClick={() => navigate(`/send/${lord}`)} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }}>
+          <Button onClick={() => navigate(`/send/${lord}`)} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }} variant="dark">
             Transfer
           </Button>
         </Row>

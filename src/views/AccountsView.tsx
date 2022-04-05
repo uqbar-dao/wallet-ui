@@ -39,7 +39,7 @@ const AccountsView = () => {
       <Modal show={showModal} hide={() => setShowModal(false)} style={{ minHeight: 160, minWidth: 300 }}>
         <Col style={{ justifyContent: 'center', alignItems: 'center', height: '100%' }}>
           <Button style={{ minWidth: 160, marginBottom: 16 }} onClick={async () => {
-            await createAccount()
+            createAccount()
             await getAccounts()
             setShowModal(false)
           }}>

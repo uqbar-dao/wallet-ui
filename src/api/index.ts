@@ -1,6 +1,5 @@
 import Urbit from "@urbit/http-api"
-const api = new Urbit("", "", "ucal")
-const ship = window.location.href.split("//")[1].split(".")[0]
+const api = new Urbit("", "", "wallet")
 
 // @ts-ignore TODO window typings
 api.ship = window.ship

@@ -3,6 +3,7 @@ import api from "../api";
 import { Account, processAccount, RawAccount } from "../types/Account";
 import { Assets } from "../types/Assets";
 import { processTokenBalance, RawTokenBalance, TokenBalance } from "../types/TokenBalance";
+import { SendTokenPayload } from "../types/Transaction";
 
 export interface WalletStore {
   accounts: Account[],
@@ -12,7 +13,7 @@ export interface WalletStore {
   createAccount: () => Promise<void>,
   importAccount: (seed: string) => Promise<void>,
   deleteAccount: (pubKey: string) => Promise<void>,
-  sendTransaction: () => Promise<void>,
+  sendTransaction: (payload: SendTokenPayload) => Promise<void>,
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
@@ -41,13 +42,11 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     set({ accounts })
   },
   createAccount: async () => {
-    console.log(1)
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
-      json: { create: {} }
+      json: { create: true }
     })
-    console.log(2)
   },
   importAccount: async (seed: string) => {
     await api.poke({
@@ -65,20 +64,27 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       })
     }
   },
-  sendTransaction: async () => {
+  sendTransaction: async ({ from, to, town, amount, destination, token, gasPrice, budget }: SendTokenPayload) => {
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
       json: {
         send: {
-          from: 'id:smart',  //  account in your wallet to send from
-          to: 'id:smart',
-          sequencer: '(unit ship)',  //  optional custom node choice
-          town: '@ud',
-          gas: '[rate=@ud bud=@ud]',
-          args: '(unit *)',
-          'my-grains': '(set @ux)',
-          'cont-grains': '(set @ux)',
+          from,
+          to,
+          town,
+          gas: {
+            rate: gasPrice,
+            bud: budget,
+          },
+          args: {
+            give: {
+              token,
+              to: destination,
+              known: false,
+              amount
+            },
+          }
         }
       }
     })

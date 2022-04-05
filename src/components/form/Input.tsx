@@ -1,13 +1,22 @@
 import React from 'react'
+import Col from '../spacing/Col'
 import './Input.scss'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  // ref?: any
+  label?: string
+  containerStyle?: React.CSSProperties
 }
 
-const Input: React.FC<InputProps> = (props) => {
+const Input: React.FC<InputProps> = ({
+  label,
+  containerStyle,
+  ...props
+}) => {
   return (
-    <input {...props} className={`input ${props.className || ''}`} />
+    <Col style={containerStyle}>
+      {!!label && <label style={{ fontSize: 14, marginBottom: 4 }}>{label}</label>}
+      <input type="text" {...props} className={`input ${props.className || ''}`} />
+    </Col>
   )
 }
 
