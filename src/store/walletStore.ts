@@ -42,8 +42,14 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   assets: {},
   selectedTown: 0,
   init: async () => {
+
+    function printEvent(update: any) {
+      console.log(JSON.stringify(update, null, 2));
+    };
+
     // Subscriptions
     api.subscribe(createSubscription('wallet', '/book-updates', handleBookUpdate(get, set)))
+    api.subscribe(createSubscription('wallet', '/tx-updates', printEvent))
 
     const [balanceData] = await Promise.all([
       api.scry<{[key: string]: { [key: string]: RawTokenBalance }}>({ app: 'wallet', path: '/book' }) || {},
