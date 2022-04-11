@@ -44,7 +44,7 @@ const SendView = () => {
         town: selected.town,
         amount: Number(amount),
         destination: addHexDots(destination),
-        token: "0xbeef", // this will come from selected.whatever-token-address
+        token: addHexDots("0x617461646174656d2d7367697a"), // this will come from selected.whatever-token-address
         gasPrice: Number(gasPrice),
         budget: Number(budget),
       })

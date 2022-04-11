@@ -103,7 +103,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   },
   sendTransaction: async ({ from, to, town, amount, destination, token, gasPrice, budget }: SendTokenPayload) => {
     console.log(2, JSON.stringify({
-      send: {
+      submit: {
         from,
         to,
         town,
@@ -115,7 +115,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
           give: {
             token,
             to: destination,
-            known: false,
             amount
           },
         }
@@ -126,7 +125,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       app: 'wallet',
       mark: 'zig-wallet-poke',
       json: {
-        send: {
+        submit: {
           from,
           to,
           town,
@@ -138,7 +137,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
             give: {
               token,
               to: destination,
-              known: false,
               amount
             },
           }
