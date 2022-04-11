@@ -41,7 +41,7 @@ const AccountDisplay: React.FC<AccountDisplayProps> = ({
         <Row className="icon" onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          deleteAccount(account.address)
+          deleteAccount(account)
         }}>
           <FaTrash />
         </Row>

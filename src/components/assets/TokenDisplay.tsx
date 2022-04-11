@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { TokenBalance } from '../../types/TokenBalance'
 import { formatAmount } from '../../utils/number';
 import Button from '../form/Button';
+import Link from '../nav/Link';
 import Col from '../spacing/Col';
 import Row from '../spacing/Row'
 import Text from '../text/Text';
@@ -29,9 +30,9 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
         </Row>
         <Row>
           <Text>{formatAmount(balance)}</Text>
-          <Button onClick={() => navigate(`/send/${lord}`)} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }} variant="dark">
+          <Link href={`/send/${riceId}`} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }} type="button dark">
             Transfer
-          </Button>
+          </Link>
         </Row>
       </Row>
       {open && (

@@ -13,7 +13,7 @@ const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   return (
-    <Col style={containerStyle}>
+    <Col className="input-container" style={containerStyle}>
       {!!label && <label style={{ fontSize: 14, marginBottom: 4 }}>{label}</label>}
       <input type="text" {...props} className={`input ${props.className || ''}`} />
     </Col>

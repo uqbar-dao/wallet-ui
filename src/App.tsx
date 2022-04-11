@@ -19,13 +19,13 @@ function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/apps/uqbar-wallet">
       <Navbar />
       <Routes>
         <Route path="/" element={<PortfolioView />} />
         <Route path="accounts/:account" element={<AccountView />} />
         <Route path="accounts" element={<AccountsView />} />
-        <Route path="send/:lord" element={<SendView />} />
+        <Route path="send/:riceId" element={<SendView />} />
         <Route path="send" element={<SendView />} />
         <Route path="transactions/:tx" element={<TransactionView />} />
         <Route path="transactions" element={<TransactionsView />} />

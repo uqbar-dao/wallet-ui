@@ -1,17 +1,21 @@
 export interface RawAccount {
-  address: string
-  seed: string
+  pubkey: string
+  privkey: string
   nonces: { [key:string]: number }
 }
 
 export interface Account {
   address: string
-  seed: string
+  rawAddress: string
+  privateKey: string
+  rawPrivateKey: string
   nonces: { [key:string]: number }
 }
 
 export const processAccount = (raw: RawAccount) => ({
-  address: raw.address.replace(/\./g, ''),
-  seed: raw.seed.replace(/\./g, ''),
+  address: raw.pubkey.replace(/\./g, ''),
+  rawAddress: raw.pubkey,
+  privateKey: raw.privkey.replace(/\./g, ''),
+  rawPrivateKey: raw.privkey,
   nonces: raw.nonces,
 })
