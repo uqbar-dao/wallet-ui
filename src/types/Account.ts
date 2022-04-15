@@ -1,3 +1,5 @@
+import { removeDots } from "../utils/format"
+
 export interface RawAccount {
   pubkey: string
   privkey: string
@@ -13,9 +15,9 @@ export interface Account {
 }
 
 export const processAccount = (raw: RawAccount) => ({
-  address: raw.pubkey.replace(/\./g, ''),
+  address: removeDots(raw.pubkey),
   rawAddress: raw.pubkey,
-  privateKey: raw.privkey.replace(/\./g, ''),
+  privateKey: removeDots(raw.privkey),
   rawPrivateKey: raw.privkey,
   nonces: raw.nonces,
 })

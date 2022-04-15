@@ -1,7 +1,9 @@
+import { removeDots } from "./format";
+
 export const formatAmount = (amount: number) => new Intl.NumberFormat('en-US').format(amount);
 
 export const addHexDots = (hex: string) => {
-  const clearLead = hex.replace('0x', '').replace(/\./g, '').toLowerCase()
+  const clearLead = removeDots(hex.replace('0x', '').toLowerCase())
   let result = ''
 
   for (let i = clearLead.length - 1; i > -1; i--) {

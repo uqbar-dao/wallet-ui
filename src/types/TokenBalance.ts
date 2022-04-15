@@ -1,5 +1,6 @@
 export interface TokenData {
   balance: number
+  metadata: string
 }
 
 export interface RawTokenBalance {

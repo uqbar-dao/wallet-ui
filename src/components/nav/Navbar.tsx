@@ -31,6 +31,7 @@ const Navbar = () => {
         <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` ? 'selected' : ''}`} href="/">Portfolio</Link>
         <Link className={`nav-link ${window.location.pathname.includes('/accounts') ? 'selected' : ''}`} href="/accounts">Accounts</Link>
         <Link className={`nav-link ${window.location.pathname.includes('/send') ? 'selected' : ''}`} href="/send">Send</Link>
+        <Link className={`nav-link ${window.location.pathname.includes('/transactions') ? 'selected' : ''}`} href="/transactions">History</Link>
       </Row>
       <Row style={{ marginRight: 4 }}>
         <Dropdown content={dropdownContent}>

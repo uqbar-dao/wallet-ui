@@ -4,8 +4,6 @@ import Navbar from './components/nav/Navbar';
 import useWalletStore from './store/walletStore';
 import AccountsView from './views/AccountsView';
 import AccountView from './views/AccountView';
-import PendingTransactionsView from './views/PendingTransactionsView';
-import PendingTransactionView from './views/PendingTransactionView';
 import PortfolioView from './views/PortfolioView';
 import SendView from './views/SendView';
 import TransactionsView from './views/TransactionsView';
@@ -27,10 +25,8 @@ function App() {
         <Route path="accounts" element={<AccountsView />} />
         <Route path="send/:riceId" element={<SendView />} />
         <Route path="send" element={<SendView />} />
-        <Route path="transactions/:tx" element={<TransactionView />} />
+        <Route path="transactions/:hash" element={<TransactionView />} />
         <Route path="transactions" element={<TransactionsView />} />
-        <Route path="pendingTxs/:tx" element={<PendingTransactionView />} />
-        <Route path="pendingTxs" element={<PendingTransactionsView />} />
         <Route
           path="*"
           element={

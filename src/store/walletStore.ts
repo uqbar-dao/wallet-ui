@@ -4,8 +4,11 @@ import api from "../api";
 import { Account, processAccount, RawAccount } from "../types/Account";
 import { Assets } from "../types/Assets";
 import { processTokenBalance, RawTokenBalance, TokenBalance } from "../types/TokenBalance";
-import { SendTokenPayload } from "../types/Transaction";
-import { handleBookUpdate } from "./subscriptions/wallet";
+import { SendTokenPayload } from "../types/SendTransaction";
+import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet";
+import { RawTransactions, Transaction } from "../types/Transaction";
+import { removeDots } from "../utils/format";
+import { TokenMetadataStore } from "../types/TokenMetadata";
 
 export function createSubscription(app: string, path: string, e: (data: any) => void): SubscriptionRequestInterface {
   const request = {
@@ -24,11 +27,15 @@ export function createSubscription(app: string, path: string, e: (data: any) => 
 export interface WalletStore {
   loading: boolean,
   accounts: Account[],
+  metadata: TokenMetadataStore,
   assets: {[key: string] : TokenBalance[]},
   selectedTown: number,
+  transactions: Transaction[],
   init: () => Promise<void>,
   setLoading: (loading: boolean) => void,
   getAccounts: () => Promise<void>,
+  getMetadata: () => Promise<void>,
+  getTransactions: () => Promise<void>,
   createAccount: () => Promise<void>,
   importAccount: (mnemonic: string, password: string) => Promise<void>,
   deleteAccount: (account: Account) => Promise<void>,
@@ -39,26 +46,24 @@ export interface WalletStore {
 const useWalletStore = create<WalletStore>((set, get) => ({
   loading: true,
   accounts: [],
+  metadata: {},
   assets: {},
   selectedTown: 0,
+  transactions: [],
   init: async () => {
-
-    function printEvent(update: any) {
-      console.log(JSON.stringify(update, null, 2));
-    };
-
     // Subscriptions
     api.subscribe(createSubscription('wallet', '/book-updates', handleBookUpdate(get, set)))
-    api.subscribe(createSubscription('wallet', '/tx-updates', printEvent))
+    api.subscribe(createSubscription('wallet', '/tx-updates', handleTxnUpdate(get, set)))
 
     const [balanceData] = await Promise.all([
       api.scry<{[key: string]: { [key: string]: RawTokenBalance }}>({ app: 'wallet', path: '/book' }) || {},
-      get().getAccounts()
+      get().getAccounts(),
+      get().getMetadata(),
     ])
     const assets: Assets = {}
 
     for (let account in balanceData) {
-      assets[account.replace(/\./g, '')] = Object.values(balanceData[account]).map(processTokenBalance)
+      assets[removeDots(account)] = Object.values(balanceData[account]).map(processTokenBalance)
     }
 
     set({ assets, loading: false })
@@ -69,6 +74,19 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     const accounts = Object.values(accountData).map(processAccount)
 
     set({ accounts, loading: false })
+  },
+  getMetadata: async () => {
+    const metadata = await api.scry<any>({ app: 'wallet', path: '/token-metadata' })
+    set({ metadata })
+  },
+  getTransactions: async () => {
+    const { accounts } = get()
+    if (accounts.length) {
+      const rawTransactions = await api.scry<RawTransactions>({ app: 'wallet', path: `/transactions/${accounts[0].rawAddress}` })
+      const transactions = Object.keys(rawTransactions).map(hash => ({ ...rawTransactions[hash], hash }))
+      console.log('TRANSACTIONS:', transactions)
+      set({ transactions })
+    }
   },
   createAccount: async () => {
     await api.poke({
@@ -149,6 +167,8 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         }
       }
     })
+
+    get().getTransactions()
   },
 }));
 

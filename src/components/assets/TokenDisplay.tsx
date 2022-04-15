@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { FaCaretRight, FaCaretDown } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import useWalletStore from '../../store/walletStore';
 import { TokenBalance } from '../../types/TokenBalance'
 import { formatAmount } from '../../utils/number';
-import Button from '../form/Button';
 import Link from '../nav/Link';
 import Col from '../spacing/Col';
 import Row from '../spacing/Row'
@@ -15,9 +14,10 @@ interface TokenDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) => {
-  const navigate = useNavigate()
+  const { metadata } = useWalletStore()
   const { lord, balance, town, riceId } = tokenBalance
   const [open, setOpen] = useState(false)
+  const tokenMetadata = metadata[tokenBalance.data.metadata]
 
   return (
     <Col {...props} className={`token-display ${props.className || ''}`}>
@@ -26,7 +26,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
           <Row onClick={() => setOpen(!open)} style={{ padding: '2px 4px', cursor: 'pointer' }}>
             {open ? <FaCaretDown /> : <FaCaretRight />}
           </Row>
-          <Text mono>{lord}</Text>
+          <Text mono>{tokenMetadata?.symbol || lord}</Text>
         </Row>
         <Row>
           <Text>{formatAmount(balance)}</Text>
@@ -37,6 +37,14 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
       </Row>
       {open && (
         <Col style={{ paddingLeft: 24, paddingTop: 8 }}>
+          {tokenMetadata && (
+            <>
+              <Row>
+                <Text style={{ width: 80 }}>Name:</Text>
+                <Text mono>{' ' + tokenMetadata.name}</Text>
+              </Row>
+            </>
+          )}
           <Row>
             <Text style={{ width: 80 }}>Town:</Text>
             <Text mono>{' ' + town}</Text>
