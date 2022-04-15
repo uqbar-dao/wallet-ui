@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import Col from '../components/spacing/Col'
 import Container from '../components/spacing/Container'
 import Row from '../components/spacing/Row'
@@ -20,7 +20,7 @@ const TransactionView = () => {
 
   useEffect(() => {
     getTransactions()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!txn) {
     return (

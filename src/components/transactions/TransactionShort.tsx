@@ -1,6 +1,6 @@
 import React from 'react'
 import { Transaction } from '../../types/Transaction';
-import { getStatus, STATUS_CODES } from '../../utils/constants';
+import { getStatus } from '../../utils/constants';
 import { formatHash } from '../../utils/format';
 import Link from '../nav/Link';
 import Col from '../spacing/Col';
