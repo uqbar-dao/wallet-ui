@@ -11,7 +11,7 @@ import Row from '../components/spacing/Row'
 import Text from '../components/text/Text'
 import useWalletStore from '../store/walletStore'
 import { TokenBalance } from '../types/TokenBalance'
-import { removeDots } from '../utils/format'
+import { formatHash, removeDots } from '../utils/format'
 import { addHexDots } from '../utils/number'
 import CopyIcon from '../components/transactions/CopyIcon';
 
@@ -21,8 +21,7 @@ import { getStatus } from '../utils/constants'
 const SendView = () => {
   const { riceId } = useParams()
   const { assets, metadata, transactions, sendTransaction } = useWalletStore()
-  const firstTxn = transactions[0]
-  const txn = firstTxn && (firstTxn.status === 100 || firstTxn.status === 101) ? firstTxn : null
+  const txn = transactions[0]
 
   const assetsList = Object.values(assets).reduce((acc, cur) => acc.concat(cur), [])
 
@@ -88,8 +87,8 @@ const SendView = () => {
           {txn && (
             <Row style={{ marginBottom: 8 }}>
               <Text style={{ marginRight: 18 }}>Hash: </Text>
-              <Link style={{ maxWidth: 'calc(100% - 100px)', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} href={`/transactions`}>
-                <Text mono>{removeDots(txn.hash)}</Text>
+              <Link style={{ maxWidth: 'calc(100% - 100px)', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} href={`/transactions/${txn.hash}`}>
+                <Text mono>{formatHash(txn.hash)}</Text>
               </Link>
               <CopyIcon text={txn.hash} />
             </Row>
@@ -98,7 +97,7 @@ const SendView = () => {
             <Row style={{ marginBottom: 16 }}>
               <Text style={{ marginRight: 9 }}>Status: </Text>
               <Text mono>{getStatus(txn.status)}</Text>
-              <Loader style={{ marginLeft: 16 }} />
+              {(txn.status === 100 || txn.status === 101) && <Loader style={{ marginLeft: 16 }} />}
             </Row>
           )}
           <Button onClick={() => setSubmitted(false)}>Done</Button>

@@ -25,7 +25,7 @@ export const handleTxnUpdate = (get: GetState<WalletStore>, set: SetState<Wallet
   const exists = transactions.find(({ hash }) => transaction.hash === hash)
 
   if (exists) {
-    set({ transactions: transactions.map(t => ({ ...t, modified: t.hash === transaction.hash ? new Date() : t.modified, status: t.hash === transaction.hash ? transaction.status : t.status })) })
+    set({ transactions: transactions.map(t => ({ ...t, modified: t.hash === transaction.hash ? new Date() : t.modified, status: Number(t.hash === transaction.hash ? transaction.status : t.status) })) })
   } else {
     // TODO: make sure sent-to-us will show up in getTransactions 
     // set({ transactions: [{ ...transaction, created: new Date(), modified: new Date() }].concat(transactions) })

@@ -16,8 +16,6 @@ const TransactionView = () => {
   const { transactions, getTransactions } = useWalletStore()
   const txn = transactions.find(t => t.hash === hash)
 
-  console.log(transactions)
-
   useEffect(() => {
     getTransactions()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

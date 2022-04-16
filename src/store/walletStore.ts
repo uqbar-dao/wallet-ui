@@ -84,7 +84,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     if (accounts.length) {
       const rawTransactions = await api.scry<RawTransactions>({ app: 'wallet', path: `/transactions/${accounts[0].rawAddress}` })
       const transactions = Object.keys(rawTransactions).map(hash => ({ ...rawTransactions[hash], hash }))
-      console.log('TRANSACTIONS:', transactions)
       set({ transactions })
     }
   },

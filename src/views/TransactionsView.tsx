@@ -37,8 +37,6 @@ const TransactionsView = () => {
   
   const { pending, rejected, finished } = groupTransactions(filteredTransactions)
 
-  console.log(transactions)
-
   return (
     <Container className='transactions-view'>
       <Col className="header">
