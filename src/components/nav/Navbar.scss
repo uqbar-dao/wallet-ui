@@ -5,6 +5,7 @@
   width: calc(100% - 32px);
   border-bottom: 2px solid rgba(colors.$uq-pink, 0.3);
   justify-content: space-between;
+  position: relative;
 
   .nav-link {
     padding: 8px 16px;
@@ -12,6 +13,10 @@
     border-bottom: 2px solid rgba(colors.$uq-pink, 0);
     margin-bottom: -2px;
     font-weight: 600;
+
+    @media only screen and (max-width: 520px) {
+      padding: 8px 20px;
+    }
 
     &.selected {
       border-bottom-color: colors.$uq-purple;
@@ -22,6 +27,15 @@
       img {
         height: 28px;
       }
+    }
+  }
+
+  .town {
+    @media only screen and (max-width: 400px) {
+      position: absolute;
+      top: 48px;
+      right: 8px;
+      cursor: pointer;
     }
   }
 }

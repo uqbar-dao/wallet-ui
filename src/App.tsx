@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from './components/nav/Navbar';
 import useWalletStore from './store/walletStore';
+import { BASENAME } from './utils/constants';
 import AccountsView from './views/AccountsView';
 import AccountView from './views/AccountView';
 import PortfolioView from './views/PortfolioView';
@@ -17,7 +18,7 @@ function App() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <BrowserRouter basename="/apps/uqbar-wallet">
+    <BrowserRouter basename={BASENAME}>
       <Navbar />
       <Routes>
         <Route path="/" element={<PortfolioView />} />

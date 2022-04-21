@@ -14,7 +14,6 @@ import './AccountsView.scss'
 const AccountsView = () => {
   const inputRef = useRef<any>(null)
   const { loading, accounts, getAccounts, createAccount, importAccount } = useWalletStore()
-  const [showModal, setShowModal] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
@@ -31,34 +30,22 @@ const AccountsView = () => {
 
   return (
     <Container className='accounts-view'>
-      <h2>Accounts</h2>
       {loading && <Text style={{ marginBottom: 16 }}>Loading...</Text>}
+      <h3>Primary Accounts</h3>
       {accounts.map(a => (
         <AccountDisplay key={a.address} account={a} />
       ))}
-      <Button onClick={() => setShowModal(true)}>
-        + New Account
+      <Button onClick={async () => {
+        if (window.confirm('Please make sure you have backed up your seed phrase and password. This will overwrite your existing account(s), are you sure?')) {
+          createAccount()
+        }
+      }}>
+        + Create Account
       </Button>
-      <Modal show={showModal} hide={() => setShowModal(false)} style={{ minHeight: 160, minWidth: 300 }}>
-        <Col style={{ justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <Button style={{ minWidth: 160, marginBottom: 16 }} onClick={async () => {
-            if (window.confirm('Please make sure you have backed up your seed phrase and password. This will overwrite your existing account(s), are you sure?')) {
-              createAccount()
-              setShowModal(false)
-            }
-          }}>
-            Create Account
-          </Button>
-          <Button style={{ minWidth: 160 }} onClick={() => {
-            if (window.confirm('Please make sure you have backed up your seed phrase and password. This will overwrite your existing account(s), are you sure?')) {
-              setShowImport(true)
-              setShowModal(false)
-            }
-          }}>
-            Import Account
-          </Button>
-        </Col>
-      </Modal>
+      <h3>Imported Accounts</h3>
+      <Button onClick={() => setShowImport(true)}>
+        + Import Account
+      </Button>
       <Modal show={showImport} hide={() => setShowImport(false)} style={{ minHeight: 160, minWidth: 300 }}>
         <Col style={{ justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
           <h3>Import Account</h3>
@@ -76,7 +63,7 @@ const AccountsView = () => {
             type="password"
           />
           <Button style={{ minWidth: 120 }} onClick={() => {
-            if (mnemonic) {
+            if (mnemonic && window.confirm('Please make sure you have backed up your seed phrase and password. This will overwrite your existing account(s), are you sure?')) {
               importAccount(mnemonic, password)
             }
             setShowImport(false)

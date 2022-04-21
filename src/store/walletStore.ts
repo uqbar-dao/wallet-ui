@@ -4,7 +4,7 @@ import api from "../api";
 import { Account, processAccount, RawAccount } from "../types/Account";
 import { Assets } from "../types/Assets";
 import { processTokenBalance, RawTokenBalance, TokenBalance } from "../types/TokenBalance";
-import { SendTokenPayload } from "../types/SendTransaction";
+import { SendNftPayload, SendTokenPayload } from "../types/SendTransaction";
 import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet";
 import { RawTransactions, Transaction } from "../types/Transaction";
 import { removeDots } from "../utils/format";
@@ -40,7 +40,8 @@ export interface WalletStore {
   importAccount: (mnemonic: string, password: string) => Promise<void>,
   deleteAccount: (account: Account) => Promise<void>,
   setNode: (town: number, ship: string) => Promise<void>,
-  sendTransaction: (payload: SendTokenPayload) => Promise<void>,
+  sendTokens: (payload: SendTokenPayload) => Promise<void>,
+  sendNft: (payload: SendNftPayload) => Promise<void>,
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
@@ -124,26 +125,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       }
     })
   },
-  sendTransaction: async ({ from, to, town, amount, destination, token, gasPrice, budget }: SendTokenPayload) => {
-    console.log(2, JSON.stringify({
-      submit: {
-        from,
-        to,
-        town,
-        gas: {
-          rate: gasPrice,
-          bud: budget,
-        },
-        args: {
-          give: {
-            token,
-            to: destination,
-            amount
-          },
-        }
-      }
-    }))
-
+  sendTokens: async ({ from, to, town, amount, destination, token, gasPrice, budget }: SendTokenPayload) => {
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
@@ -161,6 +143,31 @@ const useWalletStore = create<WalletStore>((set, get) => ({
               token,
               to: destination,
               amount
+            },
+          }
+        }
+      }
+    })
+
+    get().getTransactions()
+  },
+  sendNft: async ({ from, to, town, destination, nft, gasPrice, budget }: SendNftPayload) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        submit: {
+          from,
+          to,
+          town,
+          gas: {
+            rate: gasPrice,
+            bud: budget,
+          },
+          args: {
+            give: {
+              nft,
+              to: destination,
             },
           }
         }

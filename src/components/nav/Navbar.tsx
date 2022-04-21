@@ -9,6 +9,7 @@ import Dropdown from '../form/Dropdown'
 import Text from '../text/Text'
 import useWalletStore from '../../store/walletStore'
 import { BASENAME } from '../../utils/constants'
+import { FaWallet, FaKey, FaPaperPlane, FaHistory } from 'react-icons/fa'
 
 const Navbar = () => {
   const isMobile = isMobileCheck()
@@ -28,12 +29,20 @@ const Navbar = () => {
         <div className="nav-link logo">
           <img src={logo} alt="Uqbar Logo" />
         </div>
-        <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` ? 'selected' : ''}`} href="/">Portfolio</Link>
-        <Link className={`nav-link ${window.location.pathname.includes('/accounts') ? 'selected' : ''}`} href="/accounts">Accounts</Link>
-        <Link className={`nav-link ${window.location.pathname.includes('/send') ? 'selected' : ''}`} href="/send">Send</Link>
-        <Link className={`nav-link ${window.location.pathname.includes('/transactions') ? 'selected' : ''}`} href="/transactions">History</Link>
+        <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` ? 'selected' : ''}`} href="/">
+          {isMobile ? <FaWallet  /> : 'Portfolio'}
+        </Link>
+        <Link className={`nav-link ${window.location.pathname.includes('/accounts') ? 'selected' : ''}`} href="/accounts">
+          {isMobile ? <FaKey  /> : 'Accounts'}
+        </Link>
+        <Link className={`nav-link ${window.location.pathname.includes('/send') ? 'selected' : ''}`} href="/send">
+          {isMobile ? <FaPaperPlane  /> : 'Send'}
+        </Link>
+        <Link className={`nav-link ${window.location.pathname.includes('/transactions') ? 'selected' : ''}`} href="/transactions">
+          {isMobile ? <FaHistory  /> : 'History'}
+        </Link>
       </Row>
-      <Row style={{ marginRight: 4 }}>
+      <Row className='town'>
         <Dropdown content={dropdownContent}>
           <Text style={{ fontWeight: 600 }}>Town: {selectedTown}</Text>
         </Dropdown>
