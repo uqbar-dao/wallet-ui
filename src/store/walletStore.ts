@@ -8,7 +8,7 @@ import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet"
 import { RawTransactions, Transaction } from "../types/Transaction"
 import { TokenMetadataStore } from "../types/TokenMetadata"
 import ls from '../utils/local-storage'
-import { getLedgerAddress } from "../utils/ledger"
+// import { getLedgerAddress } from "../utils/ledger"
 
 export function createSubscription(app: string, path: string, e: (data: any) => void): SubscriptionRequestInterface {
   const request = {
@@ -110,20 +110,20 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   },
   importAccount: async (type: ImportedWalletType) => {
     // only Ledger for now
-    const importedAddress = await getLedgerAddress()
+    // const importedAddress = await getLedgerAddress()
 
-    if (importedAddress) {
-      // TODO: get nonce info
-      const { importedAccounts } = get()
+    // if (importedAddress) {
+    //   // TODO: get nonce info
+    //   const { importedAccounts } = get()
 
-      if (!importedAccounts.find(({ address }) => importedAddress === address)) {
-        const newImportedAccounts = importedAccounts.concat([{ address: importedAddress.toLowerCase(), nonces: {}, type }])
-        ls.set('importedAccounts', newImportedAccounts)
-        set({ importedAccounts: newImportedAccounts })
-      } else {
-        alert('You have already imported this account.')
-      }
-    }
+    //   if (!importedAccounts.find(({ address }) => importedAddress === address)) {
+    //     const newImportedAccounts = importedAccounts.concat([{ address: importedAddress.toLowerCase(), nonces: {}, type }])
+    //     ls.set('importedAccounts', newImportedAccounts)
+    //     set({ importedAccounts: newImportedAccounts })
+    //   } else {
+    //     alert('You have already imported this account.')
+    //   }
+    // }
   },
   deleteAccount: async (account: Account) => {
     if (window.confirm(`Are you sure you want to delete this account?\n\n${account.address}`)) {
