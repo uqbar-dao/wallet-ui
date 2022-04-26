@@ -24,8 +24,7 @@ function App() {
         <Route path="/" element={<PortfolioView />} />
         <Route path="accounts/:account" element={<AccountView />} />
         <Route path="accounts" element={<AccountsView />} />
-        <Route path="send/:riceId/:town/:nftIndex" element={<SendView />} />
-        <Route path="send/:riceId/:town" element={<SendView />} />
+        <Route path="send/:riceId/:nftIndex" element={<SendView />} />
         <Route path="send/:riceId" element={<SendView />} />
         <Route path="send" element={<SendView />} />
         <Route path="transactions/:hash" element={<TransactionView />} />

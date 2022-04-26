@@ -18,9 +18,9 @@ interface SendTokenFormProps {
 }
 
 const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
-  const { riceId, town, nftIndex } = useParams()
+  const { riceId, nftIndex } = useParams()
   const selectRef = useRef<HTMLSelectElement>(null)
-  const { assets, metadata, selectedTown, sendTokens, sendNft, setNode } = useWalletStore()
+  const { assets, metadata, sendTokens, sendNft } = useWalletStore()
   const [currentFormType, setCurrentFormType] = useState(formType)
 
   const isNft = currentFormType === 'nft'
@@ -49,13 +49,6 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     setBudget('')
     setAmount('')
   }
-
-  useEffect(() => {
-    const newTown = Number(town)
-    if (selectedTown !== undefined && !isNaN(newTown) && newTown !== selectedTown) {
-      setNode(newTown, '~zod')
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (selected === undefined && riceId) {
