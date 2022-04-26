@@ -6,6 +6,11 @@ export interface SendTransactionPayload {
   budget: number
 }
 
+export interface SendRawTransactionPayload extends SendTransactionPayload {
+  data: string
+  riceInputs: string[]
+}
+
 export interface SendAssetPayload extends SendTransactionPayload {
   destination: string
 }
@@ -16,5 +21,5 @@ export interface SendTokenPayload extends SendAssetPayload {
 }
 
 export interface SendNftPayload extends SendAssetPayload {
-  nft: string
+  nftIndex: number
 }

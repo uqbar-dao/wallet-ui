@@ -13,14 +13,14 @@ import CopyIcon from '../components/transactions/CopyIcon';
 import './SendView.scss'
 import { getStatus } from '../utils/constants'
 import SendTokenForm from '../components/forms/SendTokenForm'
-import SendTransactionForm from '../components/forms/SendTransactionForm'
+import SendRawTransactionForm from '../components/forms/SendRawTransactionForm'
 
 export type SendType = 'tokens' | 'nft' | 'data';
 
 const titles = {
   tokens: 'Tokens',
   nft: 'NFT',
-  data: 'Data',
+  data: 'Raw Data',
 }
 
 interface SelectorProps {
@@ -55,7 +55,7 @@ const SendView = () => {
       case 'nft':
         return <SendTokenForm {...{ setSubmitted, formType: 'nft' }} />
       case 'data':
-        return <SendTransactionForm {...{ setSubmitted }} />
+        return <SendRawTransactionForm {...{ setSubmitted }} />
     }
   }
 
@@ -86,8 +86,8 @@ const SendView = () => {
       ) : (
         <Col className="form-container">
           <Row className="form-selector">
-            {['tokens', 'nft'].map((title) => (
-              <Selector active={title === formType} title={title as SendType} onClick={() => setFormType(title as SendType)} />
+            {['tokens', 'nft', 'data'].map((title) => (
+              <Selector key={title} active={title === formType} title={title as SendType} onClick={() => setFormType(title as SendType)} />
             ))}
           </Row>
           {getForm()}

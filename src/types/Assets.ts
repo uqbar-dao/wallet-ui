@@ -1,5 +1,5 @@
-import { TokenBalance } from "./TokenBalance";
+import { Token } from "./Token";
 
 export interface Assets {
-  [key: string] : TokenBalance[]
+  [key: string] : Token[]
 }

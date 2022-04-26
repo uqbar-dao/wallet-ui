@@ -1,5 +1,7 @@
 import { removeDots } from "../utils/format"
 
+export type ImportedWalletType = 'ledger'
+
 export interface RawAccount {
   pubkey: string
   privkey: string
@@ -21,3 +23,14 @@ export const processAccount = (raw: RawAccount) => ({
   rawPrivateKey: raw.privkey,
   nonces: raw.nonces,
 })
+
+export interface ImportedAccount {
+  address: string
+  nonces: { [key:string]: number }
+  type: ImportedWalletType
+}
+
+export interface Seed {
+  mnemonic: string
+  password?: string
+}

@@ -1,14 +1,14 @@
-import { SubscriptionRequestInterface } from "@urbit/http-api";
+import { SubscriptionRequestInterface } from "@urbit/http-api"
 import create from "zustand"
-import api from "../api";
-import { Account, processAccount, RawAccount } from "../types/Account";
-import { Assets } from "../types/Assets";
-import { processTokenBalance, RawTokenBalance, TokenBalance } from "../types/TokenBalance";
-import { SendNftPayload, SendTokenPayload } from "../types/SendTransaction";
-import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet";
-import { RawTransactions, Transaction } from "../types/Transaction";
-import { removeDots } from "../utils/format";
-import { TokenMetadataStore } from "../types/TokenMetadata";
+import api from "../api"
+import { Account, processAccount, RawAccount, ImportedAccount, ImportedWalletType, Seed } from "../types/Accounts"
+import { Token } from "../types/Token"
+import { SendNftPayload, SendRawTransactionPayload, SendTokenPayload, SendTransactionPayload } from "../types/SendTransaction"
+import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet"
+import { RawTransactions, Transaction } from "../types/Transaction"
+import { TokenMetadataStore } from "../types/TokenMetadata"
+import ls from '../utils/local-storage'
+import { getLedgerAddress } from "../utils/ledger"
 
 export function createSubscription(app: string, path: string, e: (data: any) => void): SubscriptionRequestInterface {
   const request = {
@@ -17,18 +17,19 @@ export function createSubscription(app: string, path: string, e: (data: any) => 
     event: e,
     err: () => console.warn('SUBSCRIPTION ERROR'),
     quit: () => {
-      throw new Error('subscription clogged');
+      throw new Error('subscription clogged')
     }
-  };
+  }
   // TODO: err, quit handling (resubscribe?)
-  return request;
+  return request
 }
 
 export interface WalletStore {
   loading: boolean,
   accounts: Account[],
+  importedAccounts: ImportedAccount[],
   metadata: TokenMetadataStore,
-  assets: {[key: string] : TokenBalance[]},
+  assets: {[key: string] : Token[]},
   selectedTown: number,
   transactions: Transaction[],
   init: () => Promise<void>,
@@ -37,41 +38,42 @@ export interface WalletStore {
   getMetadata: () => Promise<void>,
   getTransactions: () => Promise<void>,
   createAccount: () => Promise<void>,
-  importAccount: (mnemonic: string, password: string) => Promise<void>,
+  restoreAccount: (mnemonic: string, password: string) => Promise<void>,
+  importAccount: (type: ImportedWalletType) => Promise<void>,
   deleteAccount: (account: Account) => Promise<void>,
+  removeAccount: (account: ImportedAccount) => Promise<void>,
+  getSeed: () => Promise<Seed>,
   setNode: (town: number, ship: string) => Promise<void>,
   sendTokens: (payload: SendTokenPayload) => Promise<void>,
   sendNft: (payload: SendNftPayload) => Promise<void>,
+  sendRawTransaction: (payload: SendRawTransactionPayload) => Promise<void>,
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
   loading: true,
   accounts: [],
+  importedAccounts: [],
   metadata: {},
   assets: {},
   selectedTown: 0,
   transactions: [],
   init: async () => {
-    // Subscriptions
+    // Subscriptions, includes getting assets
     api.subscribe(createSubscription('wallet', '/book-updates', handleBookUpdate(get, set)))
     api.subscribe(createSubscription('wallet', '/tx-updates', handleTxnUpdate(get, set)))
 
-    const [balanceData] = await Promise.all([
-      api.scry<{[key: string]: { [key: string]: RawTokenBalance }}>({ app: 'wallet', path: '/book' }) || {},
+    await Promise.all([
       get().getAccounts(),
       get().getMetadata(),
     ])
-    const assets: Assets = {}
 
-    for (let account in balanceData) {
-      assets[removeDots(account)] = Object.values(balanceData[account]).map(processTokenBalance)
-    }
+    const importedAccounts = ls.get<ImportedAccount[]>('importedAccounts') || []
 
-    set({ assets, loading: false })
+    set({ importedAccounts, loading: false })
   },
   setLoading: (loading: boolean) => set({ loading }),
   getAccounts: async () => {
-    const accountData = await api.scry<{[key: string]: RawAccount}>({ app: 'wallet', path: '/accounts' }) || {};
+    const accountData = await api.scry<{[key: string]: RawAccount}>({ app: 'wallet', path: '/accounts' }) || {}
     const accounts = Object.values(accountData).map(processAccount)
 
     set({ accounts, loading: false })
@@ -96,7 +98,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     })
     await get().getAccounts()
   },
-  importAccount: async (mnemonic: string, password: string) => {
+  restoreAccount: async (mnemonic: string, password: string) => {
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
@@ -105,6 +107,23 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       }
     })
     await get().getAccounts()
+  },
+  importAccount: async (type: ImportedWalletType) => {
+    // only Ledger for now
+    const importedAddress = await getLedgerAddress()
+
+    if (importedAddress) {
+      // TODO: get nonce info
+      const { importedAccounts } = get()
+
+      if (!importedAccounts.find(({ address }) => importedAddress === address)) {
+        const newImportedAccounts = importedAccounts.concat([{ address: importedAddress.toLowerCase(), nonces: {}, type }])
+        ls.set('importedAccounts', newImportedAccounts)
+        set({ importedAccounts: newImportedAccounts })
+      } else {
+        alert('You have already imported this account.')
+      }
+    }
   },
   deleteAccount: async (account: Account) => {
     if (window.confirm(`Are you sure you want to delete this account?\n\n${account.address}`)) {
@@ -116,6 +135,17 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       await get().getAccounts()
     }
   },
+  removeAccount: async (account: ImportedAccount) => {
+    if (window.confirm(`Are you sure you want to remove this imported account?\n\n${account.address}`)) {
+      const newImportedAccounts = get().importedAccounts.filter(({ address }) => address !== account.address)
+      ls.set('importedAccounts', newImportedAccounts)
+      set({ importedAccounts: newImportedAccounts })
+    }
+  },
+  getSeed: async () => {
+    const seedData = await api.scry<Seed>({ app: 'wallet', path: '/seed' })
+    return seedData
+  },
   setNode: async (town: number, ship: string) => {
     await api.poke({
       app: 'wallet',
@@ -124,6 +154,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         'set-node': { town, ship }
       }
     })
+    set({ selectedTown: town })
   },
   sendTokens: async ({ from, to, town, amount, destination, token, gasPrice, budget }: SendTokenPayload) => {
     await api.poke({
@@ -151,7 +182,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
 
     get().getTransactions()
   },
-  sendNft: async ({ from, to, town, destination, nft, gasPrice, budget }: SendNftPayload) => {
+  sendNft: async ({ from, to, town, destination, nftIndex, gasPrice, budget }: SendNftPayload) => {
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
@@ -165,8 +196,8 @@ const useWalletStore = create<WalletStore>((set, get) => ({
             bud: budget,
           },
           args: {
-            give: {
-              nft,
+            'give-nft': {
+              'item-id': nftIndex,
               to: destination,
             },
           }
@@ -176,6 +207,29 @@ const useWalletStore = create<WalletStore>((set, get) => ({
 
     get().getTransactions()
   },
-}));
+  sendRawTransaction: async ({ from, to, town, data, riceInputs, gasPrice, budget }: SendRawTransactionPayload) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        submit: {
+          from,
+          to,
+          town,
+          gas: {
+            rate: gasPrice,
+            bud: budget,
+          },
+          args: {
+            data,
+            riceInputs
+          }
+        }
+      }
+    })
 
-export default useWalletStore;
+    get().getTransactions()
+  },
+}))
+
+export default useWalletStore

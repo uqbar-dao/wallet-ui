@@ -13,13 +13,16 @@ import { FaWallet, FaKey, FaPaperPlane, FaHistory } from 'react-icons/fa'
 
 const Navbar = () => {
   const isMobile = isMobileCheck()
-  const { selectedTown } = useWalletStore()
+  const { selectedTown, setNode } = useWalletStore()
+
+  const selectTown = (town: number, setOpen: Function) => () => {
+    setNode(town, '~zod')
+    setOpen(false)
+  }
 
   const dropdownContent = (setOpen: Function) => (
     <>
-      <Text onClick={() => setOpen(false)}>Town 1</Text>
-      <Text>Town 2</Text>
-      <Text>Town 3</Text>
+     {[0, 1].map((town) => <Text key={town} onClick={selectTown(town, setOpen)}>Town {town}</Text>)}
     </>
   )
 
@@ -29,7 +32,7 @@ const Navbar = () => {
         <div className="nav-link logo">
           <img src={logo} alt="Uqbar Logo" />
         </div>
-        <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` ? 'selected' : ''}`} href="/">
+        <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` || window.location.pathname === BASENAME ? 'selected' : ''}`} href="/">
           {isMobile ? <FaWallet  /> : 'Portfolio'}
         </Link>
         <Link className={`nav-link ${window.location.pathname.includes('/accounts') ? 'selected' : ''}`} href="/accounts">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FaCaretRight, FaCaretDown } from 'react-icons/fa';
 import useWalletStore from '../../store/walletStore';
-import { TokenBalance } from '../../types/TokenBalance'
+import { Token } from '../../types/Token'
 import { formatAmount } from '../../utils/number';
 import Link from '../nav/Link';
 import Col from '../spacing/Col';
@@ -10,14 +10,15 @@ import Text from '../text/Text';
 import './TokenDisplay.scss'
 
 interface TokenDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
-  tokenBalance: TokenBalance
+  tokenBalance: Token
 }
 
 const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) => {
   const { metadata } = useWalletStore()
-  const { lord, balance, town, riceId } = tokenBalance
+  const { lord, balance, town, riceId, nftInfo } = tokenBalance
   const [open, setOpen] = useState(false)
   const tokenMetadata = metadata[tokenBalance.data.metadata]
+  const isToken = Boolean(balance)
 
   return (
     <Col {...props} className={`token-display ${props.className || ''}`}>
@@ -26,11 +27,19 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
           <Row onClick={() => setOpen(!open)} style={{ padding: '2px 4px', cursor: 'pointer' }}>
             {open ? <FaCaretDown /> : <FaCaretRight />}
           </Row>
-          <Text mono>{tokenMetadata?.symbol || lord}</Text>
+          {isToken ? (
+            <Text mono>{tokenMetadata?.symbol || lord}</Text>
+          ) : (
+            nftInfo && <Text mono>{nftInfo.desc}</Text>
+          )}
         </Row>
         <Row>
-          <Text>{formatAmount(balance)}</Text>
-          <Link href={`/send/${riceId}`} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }} type="button dark">
+          {isToken ? (
+            <Text>{formatAmount(balance!)}</Text>
+            ) : (
+            <Text># {nftInfo?.index}</Text>
+          )}
+          <Link href={`/send/${riceId}/${town}${isToken ? '' : `/${nftInfo?.index}`}`} style={{ marginLeft: 16, padding: '4px 8px', fontSize: '14px' }} type="button dark">
             Transfer
           </Link>
         </Row>

@@ -1,16 +1,25 @@
 import { GetState, SetState } from "zustand";
 import { Assets } from "../../types/Assets";
-import { processTokenBalance, RawTokenBalance } from "../../types/TokenBalance";
+import { processNft, processToken, RawToken } from "../../types/Token";
 import { Transaction } from "../../types/Transaction";
 import { removeDots } from "../../utils/format";
 import { WalletStore } from "../walletStore";
 
-
-export const handleBookUpdate = (get: GetState<WalletStore>, set: SetState<WalletStore>) => (balanceData: { [key: string]: RawTokenBalance }) => {
+export const handleBookUpdate = (get: GetState<WalletStore>, set: SetState<WalletStore>) => (balanceData: { [key: string]: RawToken }) => {
   const assets: Assets = {}
 
   for (let account in balanceData) {
-    assets[removeDots(account)] = Object.values(balanceData[account]).map(processTokenBalance)
+    assets[removeDots(account)] = Object.values(balanceData[account])
+      .reduce((acc, cur) => cur.data.balance ? acc.concat([processToken(cur)]) : acc, [])
+
+    const nftData = Object.values(balanceData[account]).find(tokenData => tokenData.data.items)
+    if (nftData?.data?.items) {
+      Object.keys(nftData.data.items)
+        .forEach((index) => {
+          const nft = processNft(nftData, index, nftData?.data?.items![index])
+          assets[removeDots(account)].push(nft)
+        })
+    }
   }
   
   set({ assets })

@@ -6,7 +6,7 @@ import Input from '../form/Input'
 import Row from '../spacing/Row'
 import Text from '../text/Text'
 import useWalletStore from '../../store/walletStore'
-import { TokenBalance } from '../../types/TokenBalance'
+import { Token } from '../../types/Token'
 import { removeDots } from '../../utils/format'
 import { addHexDots } from '../../utils/number'
 
@@ -18,17 +18,25 @@ interface SendTokenFormProps {
 }
 
 const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
-  const { riceId } = useParams()
+  const { riceId, town, nftIndex } = useParams()
   const selectRef = useRef<HTMLSelectElement>(null)
-  const { assets, metadata, sendTokens, sendNft } = useWalletStore()
+  const { assets, metadata, selectedTown, sendTokens, sendNft, setNode } = useWalletStore()
   const [currentFormType, setCurrentFormType] = useState(formType)
 
   const isNft = currentFormType === 'nft'
   // TODO: base this on whether isNft or not
-  const assetsList = useMemo(() => Object.values(assets).reduce((acc, cur) => acc.concat(cur), []), [assets])
+  const assetsList = useMemo(() => Object.values(assets)
+    .reduce((acc, cur) => acc.concat(cur), [])
+    .filter(t => isNft ? !t.balance : t.balance),
+    [assets, isNft]
+  )
 
-  const [selected, setSelected] = useState<TokenBalance | undefined>(assetsList.find(a => a.riceId === riceId))
-  const setSelectedAsset = (riceId: string) => setSelected(assetsList.find(a => a.riceId === riceId))
+  const [selected, setSelected] = useState<Token | undefined>(assetsList.find(a => a.riceId === riceId))
+  const setSelectedAsset = (value: string) => {
+    const [riceId, index] = value.split('-')
+    const newSelected = assetsList.find(a => a.riceId === riceId && (!isNft || a.nftInfo?.index === Number(index)))
+    setSelected(newSelected)
+  }
   const [destination, setDestination] = useState('')
   const [gasPrice, setGasPrice] = useState('')
   const [budget, setBudget] = useState('')
@@ -43,10 +51,17 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
   }
 
   useEffect(() => {
-    if (selected === undefined && riceId) {
-      setSelected(assetsList.find(a => a.riceId === riceId))
+    const newTown = Number(town)
+    if (selectedTown !== undefined && !isNaN(newTown) && newTown !== selectedTown) {
+      setNode(newTown, '~zod')
     }
-  }, [assetsList])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (selected === undefined && riceId) {
+      setSelected(assetsList.find(a => a.riceId === riceId && (nftIndex === undefined || Number(nftIndex) === a.nftInfo?.index)))
+    }
+  }, [assetsList]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (currentFormType !== formType) {
@@ -63,6 +78,8 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     e.preventDefault()
     if (!isNft && (!amount || !Number(amount))) {
       alert('You must enter an amount')
+    } else if (selected?.balance && Number(amount) > selected?.balance) {
+      alert(`You do not have that many tokens. You have ${selected.balance} tokens.`)
     } else if (!selected) {
       alert('You must select a \'from\' account')
     } else if (!destination) {
@@ -80,29 +97,43 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
         budget: Number(budget),
       }
       
-      if (isNft) {
-        // sendNft({ ...payload, nft: selected })
-      } else {
+      if (isNft && selected.nftInfo?.index) {
+        sendNft({ ...payload, nftIndex: selected.nftInfo?.index })
+        clearForm()
+        setSubmitted(true)
+      } else if (!isNft) {
         sendTokens({ ...payload, amount: Number(amount), token: selected.data.metadata })
+        clearForm()
+        setSubmitted(true)
+      } else {
+        alert('There was an issue creating the transaction, please refresh the page and try again.')
       }
-
-      clearForm()
-      setSubmitted(true)
     }
   }
 
   const tokenMetadata = selected && metadata[selected.data.metadata]
 
+  const getValue = (s?: Token) => {
+    if (!s) {
+      return undefined
+    }
+    return isNft ? `${s.riceId}-${s.nftInfo?.index || ''}` : s.riceId
+  }
+
   return (
     <Form className="send-token-form" onSubmit={submit}>
       <Text style={{ fontSize: 14 }}>From:</Text>
-      <select ref={selectRef} name="assets" value={selected?.riceId} onChange={(e: any) => setSelectedAsset(e.target.value)} style={{ width: 'calc(100% - 4px)', height: 28, marginTop: 4, fontSize: 16 }}>
-        <option>Select an asset</option>
-        {assetsList.map(a => (
-          <option key={a.riceId} value={a.riceId} style={{ fontFamily: 'monospace monospace' }}>
-            {removeDots(a.riceId)}
-          </option>
-        ))}
+      <select ref={selectRef} name="assets" value={getValue(selected)} onChange={(e: any) => setSelectedAsset(e.target.value)} style={{ width: 'calc(100% - 4px)', height: 28, marginTop: 4, fontSize: 16 }}>
+        <option>Select a {isNft ? 'NFT' : 'token'}</option>
+        {assetsList.map(a => {
+          const value = getValue(a)
+          const display = isNft ? `${a.nftInfo?.desc || ''} - # ${a.nftInfo?.index || ''}` : removeDots(a.riceId)
+          return (
+            <option key={value} value={value} style={{ fontFamily: 'monospace monospace' }}>
+              {display}
+            </option>
+          )
+        })}
       </select>
       {tokenMetadata && (
         <Row style={{ alignItems: 'center' }}>

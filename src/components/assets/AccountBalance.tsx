@@ -1,5 +1,5 @@
 import React from 'react'
-import { TokenBalance } from '../../types/TokenBalance'
+import { Token } from '../../types/Token'
 import TokenDisplay from './TokenDisplay'
 import './AccountBalance.scss'
 import Line from '../spacing/Line'
@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 
 interface AccountBalanceProps extends React.HTMLAttributes<HTMLDivElement> {
   pubKey: string
-  balances: TokenBalance[]
+  balances: Token[]
 }
 
 const AccountBalance: React.FC<AccountBalanceProps> = ({ balances, pubKey, ...props }) => {
