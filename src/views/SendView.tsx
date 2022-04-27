@@ -14,6 +14,7 @@ import './SendView.scss'
 import { getStatus } from '../utils/constants'
 import SendTokenForm from '../components/forms/SendTokenForm'
 import SendRawTransactionForm from '../components/forms/SendRawTransactionForm'
+import { useParams } from 'react-router-dom'
 
 export type SendType = 'tokens' | 'nft' | 'data';
 
@@ -42,9 +43,10 @@ const Selector = ({
 }
 
 const SendView = () => {
+  const { nftIndex } = useParams()
   const { transactions } = useWalletStore()
   const txn = transactions[0]
-  const [formType, setFormType] = useState<SendType>('tokens')
+  const [formType, setFormType] = useState<SendType>(nftIndex !== undefined ? 'nft' : 'tokens')
 
   const [submitted, setSubmitted] = useState(false)
 

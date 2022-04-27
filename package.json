@@ -17,6 +17,7 @@
     "buffer": "^6.0.3",
     "core-js": "^3.22.2",
     "ethers": "^5.6.4",
+    "ipfs-core": "^0.14.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.3.1",

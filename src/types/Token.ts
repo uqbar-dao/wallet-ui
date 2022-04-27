@@ -8,8 +8,9 @@ export interface NftItems {
 }
 
 export interface TokenData {
-  balance?: number
   metadata: string
+  salt: string
+  balance?: number
   items?: NftItems
 }
 

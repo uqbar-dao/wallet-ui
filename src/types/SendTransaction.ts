@@ -13,11 +13,11 @@ export interface SendRawTransactionPayload extends SendTransactionPayload {
 
 export interface SendAssetPayload extends SendTransactionPayload {
   destination: string
+  salt: string
 }
 
 export interface SendTokenPayload extends SendAssetPayload {
   amount: number
-  token: string
 }
 
 export interface SendNftPayload extends SendAssetPayload {

@@ -1,4 +1,5 @@
 const webpack = require("webpack")
+// const NodePolyfillPlugin÷ = require("node-polyfill-webpack-plugin")
 
 module.exports = function override(config, env) {
     //do stuff with the webpack config...
@@ -9,6 +10,7 @@ module.exports = function override(config, env) {
     config.resolve.extensions = [...config.resolve.extensions, ".ts", ".js"]
     config.plugins = [
         ...config.plugins,
+        // new NodePolyfillPlugin(),
         new webpack.ProvidePlugin({
             Buffer: ["buffer", "Buffer"],
         }),

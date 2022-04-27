@@ -31,7 +31,8 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     [assets, isNft]
   )
 
-  const [selected, setSelected] = useState<Token | undefined>(assetsList.find(a => a.riceId === riceId))
+  const [selected, setSelected] =
+    useState<Token | undefined>(assetsList.find(a => a.riceId === riceId && (!isNft || a.nftInfo?.index === Number(nftIndex))))
   const setSelectedAsset = (value: string) => {
     const [riceId, index] = value.split('-')
     const newSelected = assetsList.find(a => a.riceId === riceId && (!isNft || a.nftInfo?.index === Number(index)))
@@ -67,6 +68,8 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     }
   }, [formType, currentFormType, setCurrentFormType])
 
+  console.log(selected)
+
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!isNft && (!amount || !Number(amount))) {
@@ -85,6 +88,7 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
         from: selected.holder,
         to: selected.lord,
         town: selected.town,
+        salt: selected.data.salt,
         destination: addHexDots(destination),
         gasPrice: Number(gasPrice),
         budget: Number(budget),
@@ -95,7 +99,8 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
         clearForm()
         setSubmitted(true)
       } else if (!isNft) {
-        sendTokens({ ...payload, amount: Number(amount), token: selected.data.metadata })
+        console.log('TOKEN')
+        sendTokens({ ...payload, amount: Number(amount) })
         clearForm()
         setSubmitted(true)
       } else {
