@@ -7,7 +7,7 @@ import { WalletStore } from "../walletStore";
 
 export const handleBookUpdate = (get: GetState<WalletStore>, set: SetState<WalletStore>) => (balanceData: { [key: string]: RawToken }) => {
   const assets: Assets = {}
-
+  console.log('book UPDATE:', JSON.stringify(balanceData))
   for (let account in balanceData) {
     assets[removeDots(account)] = Object.values(balanceData[account])
       .reduce((acc, cur) => cur.data.balance ? acc.concat([processToken(cur)]) : acc, [])

@@ -81,6 +81,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   },
   getMetadata: async () => {
     const metadata = await api.scry<any>({ app: 'wallet', path: '/token-metadata' })
+    console.log('metadata:', JSON.stringify(metadata))
     set({ metadata })
   },
   getTransactions: async () => {

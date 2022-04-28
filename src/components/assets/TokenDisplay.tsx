@@ -18,7 +18,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
   const { metadata } = useWalletStore()
   const { lord, balance, town, riceId, nftInfo } = tokenBalance
   const [open, setOpen] = useState(false)
-  const tokenMetadata = metadata[tokenBalance.data.metadata]
+  const tokenMetadata = metadata[tokenBalance.data.salt]
   const isToken = Boolean(balance)
 
   return (
@@ -36,7 +36,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
         </Row>
         <Row>
           {isToken ? (
-            <Text>{formatAmount(balance!)}</Text>
+            <Text>{formatAmount(balance!, tokenMetadata.decimals)}</Text>
             ) : (
             <Text># {nftInfo?.index}</Text>
           )}

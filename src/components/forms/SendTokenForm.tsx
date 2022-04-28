@@ -109,7 +109,7 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     }
   }
 
-  const tokenMetadata = selected && metadata[selected.data.metadata]
+  const tokenMetadata = selected && metadata[selected.data.salt]
 
   const getValue = (s?: Token) => {
     if (!s) {
