@@ -9,7 +9,7 @@ import { groupTransactions } from '../utils/transactions'
 import './TransactionsView.scss'
 
 const TransactionsView = () => {
-  const { accounts, transactions, getTransactions } = useWalletStore()
+  const { accounts, transactions } = useWalletStore()
   const [address, setAddress] = useState<string | undefined>()
   const [filteredTransactions, setFilteredTransactions] = useState(transactions)
   const filterByAddress = useCallback((rawAddress?: string) => {
@@ -29,12 +29,6 @@ const TransactionsView = () => {
     }
   }, [address, transactions, filteredTransactions.length, filterByAddress])
 
-  useEffect(() => {
-    if (accounts.length) {
-      getTransactions()
-    }
-  }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
-  
   const { pending, rejected, finished } = groupTransactions(filteredTransactions)
 
   return (

@@ -13,12 +13,8 @@ import './TransactionView.scss'
 
 const TransactionView = () => {
   const { hash } = useParams()
-  const { transactions, getTransactions } = useWalletStore()
+  const { transactions } = useWalletStore()
   const txn = transactions.find(t => t.hash === hash)
-
-  useEffect(() => {
-    getTransactions()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!txn) {
     return (

@@ -68,8 +68,6 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     }
   }, [formType, currentFormType, setCurrentFormType])
 
-  console.log(selected)
-
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!isNft && (!amount || !Number(amount))) {
@@ -99,7 +97,6 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
         clearForm()
         setSubmitted(true)
       } else if (!isNft) {
-        console.log('TOKEN')
         sendTokens({ ...payload, amount: Number(amount) })
         clearForm()
         setSubmitted(true)

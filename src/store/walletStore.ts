@@ -68,6 +68,8 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       get().getMetadata(),
     ])
 
+    get().getTransactions()
+
     const importedAccounts = ls.get<ImportedAccount[]>('importedAccounts') || []
 
     set({ importedAccounts, loading: false })
@@ -204,8 +206,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         }
       }
     })
-
-    get().getTransactions()
   },
   sendNft: async ({ from, to, town, destination, salt, nftIndex, gasPrice, budget }: SendNftPayload) => {
     console.log(
@@ -252,8 +252,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         }
       }
     })
-
-    get().getTransactions()
   },
   sendRawTransaction: async ({ from, to, town, data, riceInputs, gasPrice, budget }: SendRawTransactionPayload) => {
     await api.poke({
@@ -275,8 +273,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         }
       }
     })
-
-    get().getTransactions()
   },
   addAsset: async (assetContract: string) => {
     await api.poke({

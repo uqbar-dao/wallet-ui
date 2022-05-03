@@ -1,6 +1,4 @@
 import React from 'react'
-import Col from '../spacing/Col'
-import Text from '../text/Text'
 import './Form.scss'
 
 interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {

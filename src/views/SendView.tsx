@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from '../components/form/Button'
 import Link from '../components/nav/Link'
 import Loader from '../components/popups/Loader'
@@ -15,6 +15,7 @@ import { getStatus } from '../utils/constants'
 import SendTokenForm from '../components/forms/SendTokenForm'
 import SendRawTransactionForm from '../components/forms/SendRawTransactionForm'
 import { useParams } from 'react-router-dom'
+import { Transaction } from '../types/Transaction'
 
 export type SendType = 'tokens' | 'nft' | 'data';
 
@@ -45,10 +46,19 @@ const Selector = ({
 const SendView = () => {
   const { nftIndex } = useParams()
   const { transactions } = useWalletStore()
-  const txn = transactions[0]
+  const [txn, setTxn] = useState<Transaction | undefined>()
   const [formType, setFormType] = useState<SendType>(nftIndex !== undefined ? 'nft' : 'tokens')
-
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    const targetTxn = txn
+      ? transactions.find(({ hash }) => hash === txn.hash)
+      : transactions.find(({ status }) => status >= 100)
+
+    if (targetTxn) {
+      setTxn(targetTxn)
+    }
+  }, [transactions]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const getForm = () => {
     switch (formType) {
@@ -67,21 +77,27 @@ const SendView = () => {
       {submitted ? (
         <Col className='submission-confirmation'>
           <h4 style={{ marginTop: 0, marginBottom: 16 }}>Transaction Sent!</h4>
-          {txn && (
-            <Row style={{ marginBottom: 8 }}>
-              <Text style={{ marginRight: 18 }}>Hash: </Text>
-              <Link style={{ maxWidth: 'calc(100% - 100px)', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} href={`/transactions/${txn.hash}`}>
-                <Text mono>{formatHash(txn.hash)}</Text>
-              </Link>
-              <CopyIcon text={txn.hash} />
-            </Row>
-          )}
-          {txn && (
-            <Row style={{ marginBottom: 16 }}>
-              <Text style={{ marginRight: 9 }}>Status: </Text>
-              <Text mono>{getStatus(txn.status)}</Text>
-              {(txn.status === 100 || txn.status === 101) && <Loader style={{ marginLeft: 16 }} />}
-            </Row>
+          {txn ? (
+            <>
+              <Row style={{ marginBottom: 8 }}>
+                <Text style={{ marginRight: 18 }}>Hash: </Text>
+                <Link style={{ maxWidth: 'calc(100% - 100px)', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} href={`/transactions/${txn.hash}`}>
+                  <Text mono>{formatHash(txn.hash)}</Text>
+                </Link>
+                <CopyIcon text={txn.hash} />
+              </Row>
+              <Row style={{ marginBottom: 16 }}>
+                <Text style={{ marginRight: 9 }}>Status: </Text>
+                <Text mono>{getStatus(txn.status)}</Text>
+                {(txn.status === 100 || txn.status === 101) && <Loader style={{ marginLeft: 16 }} />}
+              </Row>
+            </>
+          ) : (
+            <Text style={{ marginBottom: 16 }}>
+              Your transaction should show up here in a few seconds. If it does not, please go to
+              <Link href="transactions" style={{ marginLeft: 4 }}>History</Link>
+              .
+            </Text>
           )}
           <Button onClick={() => setSubmitted(false)}>Done</Button>
         </Col>

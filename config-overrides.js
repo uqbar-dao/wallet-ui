@@ -6,6 +6,7 @@ module.exports = function override(config, env) {
     config.resolve.fallback = {
         ...config.resolve.fallback,
         buffer: require.resolve("buffer"),
+        util: require.resolve("util"),
     }
     config.resolve.extensions = [...config.resolve.extensions, ".ts", ".js"]
     config.plugins = [

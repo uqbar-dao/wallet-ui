@@ -7,7 +7,7 @@ import Link from '../nav/Link';
 import Col from '../spacing/Col';
 import Row from '../spacing/Row'
 import Text from '../text/Text';
-// import NftImage from './NftImage';
+import NftImage from './NftImage';
 import './TokenDisplay.scss'
 
 interface TokenDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -63,7 +63,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenBalance, ...props }) =
             <Text style={{ width: 80 }}>Rice ID:</Text>
             <Text mono>{' ' + riceId}</Text>
           </Row>
-          {/* <NftImage nftInfo={nftInfo} /> */}
+          <NftImage nftInfo={nftInfo} />
         </Col>
       )}
     </Col>
