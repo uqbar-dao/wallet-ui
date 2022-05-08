@@ -9,16 +9,21 @@ export const getLedgerAddress = async () => {
     const transport = await TransportWebUSB.create()
     listen(log => console.log(log))
     const appEth = new Eth(transport)
-
     const { address } = await appEth.getAddress("44'/60'/0'/0/0", false);
-
-    console.log('ETH ADDRESS:', address)
-
     return address
   } catch (e) {
     alert('Please make sure your Ledger is connected, unlocked, and the Ethereum app is open then try again.')
     console.warn('LEDGER CONNECTION:', e)
   }
+}
+
+// @path a path in BIP 32 format
+export const deriveLedgerAddress = async (path: string) => {
+  const transport = await TransportWebUSB.create()
+  listen(log => console.log(log))
+  const appEth = new Eth(transport)
+  const { publicKey } = await appEth.eth2GetPublicKey(path);
+  return publicKey
 }
 
 export const signLedgerTransaction = async (address: string, transaction: any) => {

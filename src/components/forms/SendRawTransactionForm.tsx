@@ -83,12 +83,12 @@ const SendRawTransactionForm = ({ setSubmitted }: SendRawTransactionFormProps) =
         placeholder='Destination address'
         value={destination}
         onChange={(e: any) => setDestination(e.target.value)}
-        style={{ width: 'calc(100% - 16px)' }}
+        style={{ width: 'calc(100% - 24px)' }}
       />
       <TextArea
         label="Data:"
         containerStyle={{ marginTop: 12, width: '100%' }}
-        style={{ width: 'calc(100% - 16px)' }}
+        style={{ width: 'calc(100% - 10px)' }}
         placeholder='Raw Data'
         value={data}
         onChange={(e: any) => setDestination(e.target.value)}

@@ -15,4 +15,13 @@
       transform: scale(1.1);
     }
   }
+
+  .nick-input {
+    background: inherit;
+    border: none;
+    
+    input {
+      background: inherit
+    }
+  }
 }

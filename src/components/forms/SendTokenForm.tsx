@@ -1,5 +1,4 @@
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import Button from '../form/Button'
 import Form from '../form/Form'
 import Input from '../form/Input'
@@ -7,18 +6,24 @@ import Row from '../spacing/Row'
 import Text from '../text/Text'
 import useWalletStore from '../../store/walletStore'
 import { Token } from '../../types/Token'
-import { removeDots } from '../../utils/format'
 import { addHexDots } from '../../utils/number'
+import { displayPubKey } from '../../utils/account'
 
 import './SendTokenForm.scss'
 
 interface SendTokenFormProps {
   formType: 'tokens' | 'nft'
   setSubmitted: (submitted: boolean) => void
+  riceId: string
+  nftIndex?: number
 }
 
-const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
-  const { riceId, nftIndex } = useParams()
+const SendTokenForm = ({
+  formType,
+  setSubmitted,
+  riceId,
+  nftIndex
+}: SendTokenFormProps) => {
   const selectRef = useRef<HTMLSelectElement>(null)
   const { assets, metadata, sendTokens, sendNft } = useWalletStore()
   const [currentFormType, setCurrentFormType] = useState(formType)
@@ -33,11 +38,6 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
 
   const [selected, setSelected] =
     useState<Token | undefined>(assetsList.find(a => a.riceId === riceId && (!isNft || a.nftInfo?.index === Number(nftIndex))))
-  const setSelectedAsset = (value: string) => {
-    const [riceId, index] = value.split('-')
-    const newSelected = assetsList.find(a => a.riceId === riceId && (!isNft || a.nftInfo?.index === Number(index)))
-    setSelected(newSelected)
-  }
   const [destination, setDestination] = useState('')
   const [gasPrice, setGasPrice] = useState('')
   const [budget, setBudget] = useState('')
@@ -106,34 +106,20 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
     }
   }
 
-  const tokenMetadata = selected && metadata[selected.data.metadata]
-
-  const getValue = (s?: Token) => {
-    if (!s) {
-      return undefined
-    }
-    return isNft ? `${s.riceId}-${s.nftInfo?.index || ''}` : s.riceId
-  }
+  const tokenMetadata = selected && metadata[selected.data.salt]
 
   return (
     <Form className="send-token-form" onSubmit={submit}>
-      <Text style={{ fontSize: 14 }}>From:</Text>
-      <select ref={selectRef} name="assets" value={getValue(selected)} onChange={(e: any) => setSelectedAsset(e.target.value)} style={{ width: 'calc(100% - 4px)', height: 28, marginTop: 4, fontSize: 16 }}>
-        <option>Select a {isNft ? 'NFT' : 'token'}</option>
-        {assetsList.map(a => {
-          const value = getValue(a)
-          const display = isNft ? `${a.nftInfo?.desc || ''} - # ${a.nftInfo?.index || ''}` : removeDots(a.riceId)
-          return (
-            <option key={value} value={value} style={{ fontFamily: 'monospace monospace' }}>
-              {display}
-            </option>
-          )
-        })}
-      </select>
       {tokenMetadata && (
         <Row style={{ alignItems: 'center' }}>
-          <Text style={{ margin: '8px 8px 0px 0px', fontSize: 14 }}>Token: </Text>
-          <Text mono style={{ marginTop: 10 }}>{tokenMetadata.symbol}</Text>
+          <Text style={{ margin: '8px 12px 0px 0px', fontSize: 14 }}>Token: </Text>
+          <Text mono style={{ marginTop: 10 }}>{tokenMetadata.symbol} - rice ID: {displayPubKey(selected?.riceId)}</Text>
+        </Row>
+      )}
+      {isNft && (
+        <Row style={{ alignItems: 'center' }}>
+          <Text style={{ margin: '8px 12px 0px 0px', fontSize: 14 }}>NFT: </Text>
+          <Text mono style={{ marginTop: 10 }}>{`${selected?.nftInfo?.desc || ''} - # ${selected?.nftInfo?.index || ''}`}</Text>
         </Row>
       )}
       <Input
@@ -142,12 +128,12 @@ const SendTokenForm = ({ formType, setSubmitted }: SendTokenFormProps) => {
         placeholder='Destination address'
         value={destination}
         onChange={(e: any) => setDestination(e.target.value)}
-        style={{ width: 'calc(100% - 16px)' }}
+        style={{ width: 'calc(100% - 24px)' }}
       />
       {!isNft && <Input
         label="Amount:"
         containerStyle={{ marginTop: 12, width: '100%' }}
-        style={{ width: 'calc(100% - 16px)' }}
+        style={{ width: 'calc(100% - 24px)' }}
         value={amount}
         placeholder="Amount"
         onChange={(e: any) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}

@@ -1,13 +1,15 @@
 import { SubscriptionRequestInterface } from "@urbit/http-api"
 import create from "zustand"
 import api from "../api"
-import { Account, processAccount, RawAccount, ImportedAccount, ImportedWalletType, Seed } from "../types/Accounts"
+import { HotWallet, processAccount, RawAccount, HardwareWallet, HardwareWalletType, Seed } from "../types/Accounts"
 import { Token } from "../types/Token"
 import { SendNftPayload, SendRawTransactionPayload, SendTokenPayload, SendTransactionPayload } from "../types/SendTransaction"
 import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet"
 import { RawTransactions, Transaction } from "../types/Transaction"
 import { TokenMetadataStore } from "../types/TokenMetadata"
-import ls from '../utils/local-storage'
+import { removeDots } from "../utils/format"
+import { deriveLedgerAddress, getLedgerAddress } from "../utils/ledger"
+import { addHexDots } from "../utils/number"
 // import { getLedgerAddress } from "../utils/ledger"
 
 export function createSubscription(app: string, path: string, e: (data: any) => void): SubscriptionRequestInterface {
@@ -25,25 +27,28 @@ export function createSubscription(app: string, path: string, e: (data: any) => 
 }
 
 export interface WalletStore {
-  loading: boolean,
-  accounts: Account[],
-  importedAccounts: ImportedAccount[],
+  loadingText: string | null,
+  accounts: HotWallet[],
+  importedAccounts: HardwareWallet[],
   metadata: TokenMetadataStore,
   assets: {[key: string] : Token[]},
   selectedTown: number,
   transactions: Transaction[],
   init: () => Promise<void>,
-  setLoading: (loading: boolean) => void,
+  setLoading: (loadingText: string | null) => void,
   getAccounts: () => Promise<void>,
   getMetadata: () => Promise<void>,
   getTransactions: () => Promise<void>,
   createAccount: () => Promise<void>,
+  deriveNewAddress: (hdpath: string, nick: string, type?: HardwareWalletType) => Promise<void>,
+  trackAddress: (address: string, nick: string) => Promise<void>,
+  editNickname: (address: string, nick: string) => Promise<void>,
   restoreAccount: (mnemonic: string, password: string) => Promise<void>,
-  importAccount: (type: ImportedWalletType) => Promise<void>,
-  deleteAccount: (account: Account) => Promise<void>,
-  removeAccount: (account: ImportedAccount) => Promise<void>,
+  importAccount: (type: HardwareWalletType, nick: string) => Promise<void>,
+  deleteAccount: (address: string) => Promise<void>,
   getSeed: () => Promise<Seed>,
   setNode: (town: number, ship: string) => Promise<void>,
+  setIndexer: (ship: string) => Promise<void>,
   sendTokens: (payload: SendTokenPayload) => Promise<void>,
   sendNft: (payload: SendNftPayload) => Promise<void>,
   sendRawTransaction: (payload: SendRawTransactionPayload) => Promise<void>,
@@ -51,7 +56,7 @@ export interface WalletStore {
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
-  loading: true,
+  loadingText: 'Loading...',
   accounts: [],
   importedAccounts: [],
   metadata: {},
@@ -70,16 +75,24 @@ const useWalletStore = create<WalletStore>((set, get) => ({
 
     get().getTransactions()
 
-    const importedAccounts = ls.get<ImportedAccount[]>('importedAccounts') || []
-
-    set({ importedAccounts, loading: false })
+    set({ loadingText: null })
   },
-  setLoading: (loading: boolean) => set({ loading }),
+  setLoading: (loadingText: string | null) => set({ loadingText }),
   getAccounts: async () => {
     const accountData = await api.scry<{[key: string]: RawAccount}>({ app: 'wallet', path: '/accounts' }) || {}
-    const accounts = Object.values(accountData).map(processAccount)
+    const allAccounts = Object.values(accountData).map(processAccount).sort((a, b) => a.nick.localeCompare(b.nick))
 
-    set({ accounts, loading: false })
+    const { accounts, importedAccounts } = allAccounts.reduce(({ accounts, importedAccounts }, cur) => {
+      if (cur.imported) {
+        const [nick, type] = cur.nick.split('//')
+        importedAccounts.push({ ...cur, type: type as HardwareWalletType, nick })
+      } else {
+        accounts.push(cur)
+      }
+      return { accounts, importedAccounts }
+    }, { accounts: [] as HotWallet[], importedAccounts: [] as HardwareWallet[] })
+
+    set({ accounts, importedAccounts, loadingText: null })
   },
   getMetadata: async () => {
     const metadata = await api.scry<any>({ app: 'wallet', path: '/token-metadata' })
@@ -98,52 +111,107 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
-      json: { create: true }
+      json: { 'generate-hot-wallet': true }
     })
-    await get().getAccounts()
+    get().getAccounts()
+  },
+  deriveNewAddress: async (hdpath: string, nick: string, type?: HardwareWalletType) => {
+    set({ loadingText: 'Deriving address, this could take up to 60 seconds...' })
+    if (type) {
+      let deriveAddress: ((path: string) => Promise<string>) | undefined
+      if (type === 'ledger') {
+        deriveAddress = deriveLedgerAddress
+      }
+
+      if (deriveAddress !== undefined) {
+        const importedAddress = await deriveAddress(hdpath)
+        if (importedAddress) {
+          const { importedAccounts } = get()
+          if (!importedAccounts.find(({ address }) => importedAddress === address)) {
+            await api.poke({
+              app: 'wallet',
+              mark: 'zig-wallet-poke',
+              json: {
+                'add-tracked-address': { address: addHexDots(importedAddress), nick: `${nick}//${type}` }
+              }
+            })
+          } else {
+            alert('You have already imported this address.')
+          }
+        }
+      }
+    } else {
+      await api.poke({
+        app: 'wallet',
+        mark: 'zig-wallet-poke',
+        json: {
+          'derive-new-address': { hdpath, nick }
+        }
+      })
+    }
+    get().getAccounts()
+    set({ loadingText: null })
+  },
+  trackAddress: async (address: string, nick: string) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        'add-tracked-address': { address, nick }
+      }
+    })
+    get().getAccounts()
+  },
+  editNickname: async (address: string, nick: string) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        'edit-nickname': { address, nick }
+      }
+    })
+    get().getAccounts()
   },
   restoreAccount: async (mnemonic: string, password: string) => {
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
       json: {
-        import: { mnemonic, password }
+        'import-seed': { mnemonic, password }
       }
     })
-    await get().getAccounts()
+    get().getAccounts()
   },
-  importAccount: async (type: ImportedWalletType) => {
+  importAccount: async (type: HardwareWalletType, nick: string) => {
     // only Ledger for now
-    // const importedAddress = await getLedgerAddress()
+    const importedAddress = await getLedgerAddress()
 
-    // if (importedAddress) {
-    //   // TODO: get nonce info
-    //   const { importedAccounts } = get()
+    if (importedAddress) {
+      // TODO: get nonce info
+      const { importedAccounts } = get()
 
-    //   if (!importedAccounts.find(({ address }) => importedAddress === address)) {
-    //     const newImportedAccounts = importedAccounts.concat([{ address: importedAddress.toLowerCase(), nonces: {}, type }])
-    //     ls.set('importedAccounts', newImportedAccounts)
-    //     set({ importedAccounts: newImportedAccounts })
-    //   } else {
-    //     alert('You have already imported this account.')
-    //   }
-    // }
+      if (!importedAccounts.find(({ address }) => importedAddress === address)) {
+        await api.poke({
+          app: 'wallet',
+          mark: 'zig-wallet-poke',
+          json: {
+            'add-tracked-address': { address: addHexDots(importedAddress), nick: `${nick}//${type}` }
+          }
+        })
+        get().getAccounts()
+      } else {
+        alert('You have already imported this address.')
+      }
+    }
   },
-  deleteAccount: async (account: Account) => {
-    if (window.confirm(`Are you sure you want to delete this account?\n\n${account.address}`)) {
+  deleteAccount: async (address: string) => {
+    if (window.confirm(`Are you sure you want to remove this address?\n\n${removeDots(address)}`)) {
       await api.poke({
         app: 'wallet',
         mark: 'zig-wallet-poke',
-        json: { delete: { pubkey: account.rawAddress } }
+        json: { 'delete-address': { address } }
       })
-      await get().getAccounts()
-    }
-  },
-  removeAccount: async (account: ImportedAccount) => {
-    if (window.confirm(`Are you sure you want to remove this imported account?\n\n${account.address}`)) {
-      const newImportedAccounts = get().importedAccounts.filter(({ address }) => address !== account.address)
-      ls.set('importedAccounts', newImportedAccounts)
-      set({ importedAccounts: newImportedAccounts })
+      get().getAccounts()
     }
   },
   getSeed: async () => {
@@ -160,30 +228,16 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     })
     set({ selectedTown: town })
   },
+  setIndexer: async (ship: string) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        'set-indexer': { ship }
+      }
+    })
+  },
   sendTokens: async ({ from, to, town, amount, destination, salt, gasPrice, budget }: SendTokenPayload) => {
-    console.log(
-      JSON.stringify(
-        {
-          submit: {
-            from,
-            to,
-            town,
-            gas: {
-              rate: gasPrice,
-              bud: budget,
-            },
-            args: {
-              give: {
-                salt,
-                to: destination,
-                amount
-              },
-            }
-          }
-        }
-      )
-    )
-
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
@@ -208,28 +262,6 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     })
   },
   sendNft: async ({ from, to, town, destination, salt, nftIndex, gasPrice, budget }: SendNftPayload) => {
-    console.log(
-      JSON.stringify(
-        {
-          submit: {
-            from,
-            to,
-            town,
-            gas: {
-              rate: gasPrice,
-              bud: budget,
-            },
-            args: {
-              'give-nft': {
-                salt,
-                'item-id': nftIndex,
-                to: destination,
-              },
-            }
-          }
-        }
-      )
-    )
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',

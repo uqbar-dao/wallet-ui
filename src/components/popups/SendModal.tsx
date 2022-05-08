@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import Button from '../components/form/Button'
-import Link from '../components/nav/Link'
-import Loader from '../components/popups/Loader'
-import Col from '../components/spacing/Col'
-import Container from '../components/spacing/Container'
-import Row from '../components/spacing/Row'
-import Text from '../components/text/Text'
-import useWalletStore from '../store/walletStore'
-import { formatHash } from '../utils/format'
-import CopyIcon from '../components/transactions/CopyIcon';
+import Button from '../../components/form/Button'
+import Link from '../../components/nav/Link'
+import Loader from '../../components/popups/Loader'
+import Col from '../../components/spacing/Col'
+import Row from '../../components/spacing/Row'
+import Text from '../../components/text/Text'
+import useWalletStore from '../../store/walletStore'
+import { formatHash } from '../../utils/format'
+import CopyIcon from '../../components/transactions/CopyIcon';
+import { getStatus } from '../../utils/constants'
+import SendTokenForm from '../../components/forms/SendTokenForm'
+import SendRawTransactionForm from '../../components/forms/SendRawTransactionForm'
+import { Transaction } from '../../types/Transaction'
+import Modal, { ModalProps } from './Modal'
 
-import './SendView.scss'
-import { getStatus } from '../utils/constants'
-import SendTokenForm from '../components/forms/SendTokenForm'
-import SendRawTransactionForm from '../components/forms/SendRawTransactionForm'
-import { useParams } from 'react-router-dom'
-import { Transaction } from '../types/Transaction'
+import './SendModal.scss'
 
 export type SendType = 'tokens' | 'nft' | 'data';
 
@@ -43,11 +42,21 @@ const Selector = ({
   );
 }
 
-const SendView = () => {
-  const { nftIndex } = useParams()
+interface SendModalProps extends ModalProps {
+  riceId?: string
+  nftIndex?: number
+  formType: SendType
+}
+
+const SendModal = ({
+  riceId = '',
+  nftIndex,
+  show,
+  formType,
+  hide
+}: SendModalProps) => {
   const { transactions } = useWalletStore()
   const [txn, setTxn] = useState<Transaction | undefined>()
-  const [formType, setFormType] = useState<SendType>(nftIndex !== undefined ? 'nft' : 'tokens')
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
@@ -63,20 +72,20 @@ const SendView = () => {
   const getForm = () => {
     switch (formType) {
       case 'tokens':
-        return <SendTokenForm {...{ setSubmitted, formType: 'tokens' }} />
+        return <SendTokenForm {...{ setSubmitted, riceId, formType: 'tokens' }} />
       case 'nft':
-        return <SendTokenForm {...{ setSubmitted, formType: 'nft' }} />
+        return <SendTokenForm {...{ setSubmitted, riceId, nftIndex, formType: 'nft' }} />
       case 'data':
         return <SendRawTransactionForm {...{ setSubmitted }} />
     }
   }
 
   return (
-    <Container className='send-view'>
-      <h2>Send</h2>
+    <Modal show={show} hide={hide} className='send-view'>
+      <h4 style={{ marginTop: 0 }}>Send</h4>
       {submitted ? (
         <Col className='submission-confirmation'>
-          <h4 style={{ marginTop: 0, marginBottom: 16 }}>Transaction Sent!</h4>
+          <h4 style={{ marginTop: 0, marginBottom: 16 }}>Transaction {txn?.status === 0 ? 'Complete' : 'Sent'}!</h4>
           {txn ? (
             <>
               <Row style={{ marginBottom: 8 }}>
@@ -95,24 +104,17 @@ const SendView = () => {
           ) : (
             <Text style={{ marginBottom: 16 }}>
               Your transaction should show up here in a few seconds. If it does not, please go to
-              <Link href="transactions" style={{ marginLeft: 4 }}>History</Link>
+              <Link href="/transactions" style={{ marginLeft: 4 }}>History</Link>
               .
             </Text>
           )}
-          <Button onClick={() => setSubmitted(false)}>Done</Button>
+          <Button onClick={hide}>Done</Button>
         </Col>
       ) : (
-        <Col className="form-container">
-          <Row className="form-selector">
-            {['tokens', 'nft', 'data'].map((title) => (
-              <Selector key={title} active={title === formType} title={title as SendType} onClick={() => setFormType(title as SendType)} />
-            ))}
-          </Row>
-          {getForm()}
-        </Col>
+        getForm()
       )}
-    </Container>
+    </Modal>
   )
 }
 
-export default SendView
+export default SendModal

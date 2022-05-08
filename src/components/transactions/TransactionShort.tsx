@@ -17,7 +17,6 @@ const TransactionShort: React.FC<TransactionShortProps> = ({
   txn,
   ...props
 }) => {
-  console.log("TXN", getStatus(txn.status), txn.status)
   return (
     <Col {...props} className={`transaction-short ${props.className || ''}`}>
       <Row>
