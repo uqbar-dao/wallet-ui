@@ -1,5 +1,5 @@
 import 'core-js/actual'
-import { ethers } from "ethers"
+import { ethers, Wallet } from "ethers"
 import { listen } from "@ledgerhq/logs"
 import Eth from "@ledgerhq/hw-app-eth"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb" // eslint-disable-line
@@ -32,6 +32,10 @@ export const signLedgerTransaction = async (address: string, hash: string, egg: 
     const transport = await TransportWebUSB.create()
     listen(log => console.log(log))
     const appEth = new Eth(transport)
+
+    // const wallet = new Wallet(pk)
+    // const signature = await wallet.signMessage(hash)
+    // const { r: r1, s: s1, v: v1 } = ethers.utils.splitSignature(signature)
 
     // TODO: fill these out from the egg
     const ethHash = ethers.utils.serializeTransaction({
