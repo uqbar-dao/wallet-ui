@@ -10,6 +10,8 @@ import { addHexDots } from '../../utils/number'
 import { displayPubKey } from '../../utils/account'
 
 import './SendTokenForm.scss'
+import { signLedgerTransaction } from '../../utils/ledger'
+import { removeDots } from '../../utils/format'
 
 interface SendTokenFormProps {
   formType: 'tokens' | 'nft'
@@ -25,7 +27,7 @@ const SendTokenForm = ({
   nftIndex
 }: SendTokenFormProps) => {
   const selectRef = useRef<HTMLSelectElement>(null)
-  const { assets, metadata, sendTokens, sendNft } = useWalletStore()
+  const { assets, metadata, accounts, importedAccounts, getPendingHash, sendTokens, sendNft, submitSignedHash } = useWalletStore()
   const [currentFormType, setCurrentFormType] = useState(formType)
 
   const isNft = currentFormType === 'nft'
@@ -68,7 +70,7 @@ const SendTokenForm = ({
     }
   }, [formType, currentFormType, setCurrentFormType])
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!isNft && (!amount || !Number(amount))) {
       alert('You must enter an amount')
@@ -81,6 +83,8 @@ const SendTokenForm = ({
       alert('You must specify a destination address')
     } else if (Number(gasPrice) < 1 || Number(budget) < Number(gasPrice)) {
       alert('You must specify a gas price and budget')
+    } else if (!accounts.find(a => a.rawAddress === selected.holder) && !importedAccounts.find(a => a.rawAddress === selected.holder)) {
+      alert('You do not have this account, did you remove a hardware wallet account?')
     } else {
       const payload = {
         from: selected.holder,
@@ -93,16 +97,26 @@ const SendTokenForm = ({
       }
       
       if (isNft && selected.nftInfo?.index) {
-        sendNft({ ...payload, nftIndex: selected.nftInfo?.index })
-        clearForm()
-        setSubmitted(true)
+        await sendNft({ ...payload, nftIndex: selected.nftInfo?.index })
       } else if (!isNft) {
-        sendTokens({ ...payload, amount: Number(amount) })
-        clearForm()
-        setSubmitted(true)
-      } else {
-        alert('There was an issue creating the transaction, please refresh the page and try again.')
+        await sendTokens({ ...payload, amount: Number(amount) })
       }
+
+      clearForm()
+
+      if (importedAccounts.find(a => a.rawAddress === selected.holder)) {
+        const { hash, egg } = await getPendingHash()
+        console.log(2, egg)
+        const { ethHash, sig } = await signLedgerTransaction(removeDots(selected.holder), hash, egg)
+        if (sig) {
+          console.log(3, sig)
+          submitSignedHash(hash, ethHash, sig)
+        } else {
+          alert('There was an error signing the transaction with Ledger.')
+        }
+      }
+
+      setSubmitted(true)
     }
   }
 

@@ -1,15 +1,16 @@
-import 'core-js/actual';
-import { ethers } from "ethers";
+import 'core-js/actual'
+import { ethers } from "ethers"
 import { listen } from "@ledgerhq/logs"
 import Eth from "@ledgerhq/hw-app-eth"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb" // eslint-disable-line
+import { removeDots } from './format'
 
 export const getLedgerAddress = async () => {
   try {
     const transport = await TransportWebUSB.create()
     listen(log => console.log(log))
     const appEth = new Eth(transport)
-    const { address } = await appEth.getAddress("44'/60'/0'/0/0", false);
+    const { address } = await appEth.getAddress("44'/60'/0'/0/0", false)
     return address
   } catch (e) {
     alert('Please make sure your Ledger is connected, unlocked, and the Ethereum app is open then try again.')
@@ -22,32 +23,43 @@ export const deriveLedgerAddress = async (path: string) => {
   const transport = await TransportWebUSB.create()
   listen(log => console.log(log))
   const appEth = new Eth(transport)
-  const { publicKey } = await appEth.eth2GetPublicKey(path);
+  const { publicKey } = await appEth.eth2GetPublicKey(path)
   return publicKey
 }
 
-export const signLedgerTransaction = async (address: string, transaction: any) => {
+export const signLedgerTransaction = async (address: string, hash: string, egg: any) => {
   try {
     const transport = await TransportWebUSB.create()
     listen(log => console.log(log))
     const appEth = new Eth(transport)
 
-    // TODO: check what the backend expects for this
-    const unsignedTx = ethers.utils.serializeTransaction(transaction).substring(2);
+    // TODO: fill these out from the egg
+    const ethHash = ethers.utils.serializeTransaction({
+      to: removeDots(egg.to).substring(22),
+      nonce: egg.nonce,
+      gasLimit: ethers.utils.hexlify(egg.budget),
+      gasPrice: ethers.utils.hexlify(egg.rate),
+      value: hash,
+      chainId: egg.town,
+      type: null,
+    })
 
-    const signature = await appEth.signTransaction("44'/60'/0'/0/0", unsignedTx);
+    // How to figure out path from address? Probably the main path is fine
+    const signature = await appEth.signTransaction("44'/60'/0'/0/0", ethHash.substring(2), null)
+    console.log('SIGNATURE:', signature)
 
     const attachedSig = {
-      r: "0x"+signature.r,
-      s: "0x"+signature.s,
+      r: parseInt("0x"+signature.r),
+      s: parseInt("0x"+signature.s),
       v: parseInt(signature.v),
-      from: address,
     }
 
-    const signedTx = ethers.utils.serializeTransaction(transaction, attachedSig);
+    console.log('BASE10 SIG:', attachedSig)
 
-    return signedTx
+    return { ethHash, sig: attachedSig }
   } catch (e) {
     console.warn('LEDGER CONNECTION:', e)
   }
+
+  return { ethHash: null, sig: null }
 }

@@ -53,6 +53,8 @@ export interface WalletStore {
   sendNft: (payload: SendNftPayload) => Promise<void>,
   sendRawTransaction: (payload: SendRawTransactionPayload) => Promise<void>,
   addAsset: (assetContract: string) => Promise<void>,
+  getPendingHash: () => Promise<{ hash: string; egg: any; }>
+  submitSignedHash: (hash: string, ethHash: string, sig: { v: number; r: number; s: number; }) => Promise<void>
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
@@ -184,6 +186,7 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   },
   importAccount: async (type: HardwareWalletType, nick: string) => {
     // only Ledger for now
+    set({ loadingText: 'Importing...' })
     const importedAddress = await getLedgerAddress()
 
     if (importedAddress) {
@@ -200,9 +203,11 @@ const useWalletStore = create<WalletStore>((set, get) => ({
         })
         get().getAccounts()
       } else {
+        set({ loadingText: null })
         alert('You have already imported this address.')
       }
     }
+    set({ loadingText: null })
   },
   deleteAccount: async (address: string) => {
     if (window.confirm(`Are you sure you want to remove this address?\n\n${removeDots(address)}`)) {
@@ -238,6 +243,24 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     })
   },
   sendTokens: async ({ from, to, town, amount, destination, salt, gasPrice, budget }: SendTokenPayload) => {
+    console.log({
+      submit: {
+        from,
+        to,
+        town,
+        gas: {
+          rate: gasPrice,
+          bud: budget,
+        },
+        args: {
+          give: {
+            salt,
+            to: destination,
+            amount
+          },
+        }
+      }
+    })
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
@@ -312,6 +335,20 @@ const useWalletStore = create<WalletStore>((set, get) => ({
       mark: 'zig-wallet-poke',
       json: {
         'add-asset': { asset: assetContract }
+      }
+    })
+  },
+  getPendingHash: async () => {
+    const { hash, egg } = await api.scry<{ hash: string; egg: any }>({ app: 'wallet', path: '/pending' }) || {}
+    console.log('PENDING:', hash, egg)
+    return { hash, egg }
+  },
+  submitSignedHash: async (hash: string, ethHash: string, sig: { v: number; r: number; s: number; }) => {
+    await api.poke({
+      app: 'wallet',
+      mark: 'zig-wallet-poke',
+      json: {
+        'submit-signed': { hash, ethHash, sig }
       }
     })
   },
