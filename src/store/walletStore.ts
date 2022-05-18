@@ -54,7 +54,7 @@ export interface WalletStore {
   sendRawTransaction: (payload: SendRawTransactionPayload) => Promise<void>,
   addAsset: (assetContract: string) => Promise<void>,
   getPendingHash: () => Promise<{ hash: string; egg: any; }>
-  submitSignedHash: (hash: string, ethHash: string, sig: { v: number; r: number; s: number; }) => Promise<void>
+  submitSignedHash: (hash: string, ethHash: string, sig: { v: number; r: string; s: string; }) => Promise<void>
 }
 
 const useWalletStore = create<WalletStore>((set, get) => ({
@@ -343,12 +343,15 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     console.log('PENDING:', hash, egg)
     return { hash, egg }
   },
-  submitSignedHash: async (hash: string, ethHash: string, sig: { v: number; r: number; s: number; }) => {
+  submitSignedHash: async (hash: string, ethHash: string, sig: { v: number; r: string; s: string; }) => {
+    console.log({
+      'submit-signed': { hash, ethHash, sig }
+    })
     await api.poke({
       app: 'wallet',
       mark: 'zig-wallet-poke',
       json: {
-        'submit-signed': { hash, ethHash, sig }
+        'submit-signed': { hash, 'eth-hash': addHexDots(ethHash), sig }
       }
     })
   },

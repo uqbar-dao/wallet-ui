@@ -5,6 +5,9 @@ import './AccountBalance.scss'
 import Line from '../spacing/Line'
 import { displayPubKey } from '../../utils/account'
 import { useNavigate } from 'react-router-dom'
+import Row from '../spacing/Row'
+import CopyIcon from '../transactions/CopyIcon'
+import { removeDots } from '../../utils/format'
 
 interface AccountBalanceProps extends React.HTMLAttributes<HTMLDivElement> {
   pubKey: string
@@ -29,9 +32,12 @@ const AccountBalance: React.FC<AccountBalanceProps> = ({
       {showAddress && (
         <>
           <h4 style={{ marginBottom: 0 }}>Account</h4>
-          <h4 style={{ fontFamily: 'monospace, monospace', marginTop: 0, cursor: 'pointer' }} onClick={() => navigate(`/accounts/${pubKey}`)}>
-            {displayPubKey(pubKey)}
-          </h4>
+          <Row style={{ alignItems: 'center', marginBottom: 12 }}>
+            <h4 style={{ fontFamily: 'monospace, monospace', margin: 0, cursor: 'pointer' }} onClick={() => navigate(`/accounts/${pubKey}`)}>
+              {displayPubKey(pubKey)}
+            </h4>
+            <CopyIcon text={removeDots(pubKey)} />
+          </Row>
           <Line style={{ marginBottom: '8px' }} />
         </>
       )}

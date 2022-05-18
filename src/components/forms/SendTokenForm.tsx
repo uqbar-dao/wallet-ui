@@ -27,7 +27,7 @@ const SendTokenForm = ({
   nftIndex
 }: SendTokenFormProps) => {
   const selectRef = useRef<HTMLSelectElement>(null)
-  const { assets, metadata, accounts, importedAccounts, getPendingHash, sendTokens, sendNft, submitSignedHash } = useWalletStore()
+  const { assets, metadata, accounts, importedAccounts, setLoading, getPendingHash, sendTokens, sendNft, submitSignedHash } = useWalletStore()
   const [currentFormType, setCurrentFormType] = useState(formType)
 
   const isNft = currentFormType === 'nft'
@@ -107,10 +107,12 @@ const SendTokenForm = ({
       if (importedAccounts.find(a => a.rawAddress === selected.holder)) {
         const { hash, egg } = await getPendingHash()
         console.log(2, egg)
+        setLoading('Please sign the transaction on your Ledger')
         const { ethHash, sig } = await signLedgerTransaction(removeDots(selected.holder), hash, egg)
+        setLoading(null)
         if (sig) {
           console.log(3, sig)
-          submitSignedHash(hash, ethHash, sig)
+          await submitSignedHash(hash, ethHash, sig)
         } else {
           alert('There was an error signing the transaction with Ledger.')
         }

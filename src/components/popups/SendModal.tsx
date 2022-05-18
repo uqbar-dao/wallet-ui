@@ -80,8 +80,13 @@ const SendModal = ({
     }
   }
 
+  const hideModal = () => {
+    hide();
+    setSubmitted(false);
+  }
+
   return (
-    <Modal show={show} hide={hide} className='send-view'>
+    <Modal show={show} hide={hideModal} className='send-view'>
       <h4 style={{ marginTop: 0 }}>Send</h4>
       {submitted ? (
         <Col className='submission-confirmation'>
@@ -108,7 +113,7 @@ const SendModal = ({
               .
             </Text>
           )}
-          <Button onClick={hide}>Done</Button>
+          <Button onClick={hideModal}>Done</Button>
         </Col>
       ) : (
         getForm()

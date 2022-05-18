@@ -4,6 +4,7 @@ import { listen } from "@ledgerhq/logs"
 import Eth from "@ledgerhq/hw-app-eth"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb" // eslint-disable-line
 import { removeDots } from './format'
+import { addHexDots } from './number'
 
 export const getLedgerAddress = async () => {
   try {
@@ -38,23 +39,32 @@ export const signLedgerTransaction = async (address: string, hash: string, egg: 
     // const { r: r1, s: s1, v: v1 } = ethers.utils.splitSignature(signature)
 
     // TODO: fill these out from the egg
+    console.log('EGG:', egg)
+    const to = (Object.values(egg.args)[0] as any)?.to
+
+
+  //Serializing the transaction to pass it to Ledger Nano for signing
+
+    // Need a working version of this
     const ethHash = ethers.utils.serializeTransaction({
-      to: removeDots(egg.to).substring(22),
-      nonce: egg.nonce,
+      to: removeDots(to).substring(0, 42),
+      gasPrice: '0x' + parseInt(egg.rate).toString(16),
       gasLimit: ethers.utils.hexlify(egg.budget),
-      gasPrice: ethers.utils.hexlify(egg.rate),
-      value: hash,
+      nonce: egg.nonce,
       chainId: egg.town,
-      type: null,
+      data: removeDots(hash),
+      // value: ethers.utils.parseUnits(1, "ether")._hex
     })
+
+    console.log('ETH HASH:', ethHash)
 
     // How to figure out path from address? Probably the main path is fine
     const signature = await appEth.signTransaction("44'/60'/0'/0/0", ethHash.substring(2), null)
     console.log('SIGNATURE:', signature)
 
     const attachedSig = {
-      r: parseInt("0x"+signature.r),
-      s: parseInt("0x"+signature.s),
+      r: addHexDots(signature.r),
+      s: addHexDots(signature.s),
       v: parseInt(signature.v),
     }
 
