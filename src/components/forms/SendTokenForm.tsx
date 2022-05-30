@@ -81,6 +81,8 @@ const SendTokenForm = ({
     } else if (!destination) {
       // TODO: validate the destination address
       alert('You must specify a destination address')
+    } else if (removeDots(destination) === removeDots(selected.holder)) {
+      alert('Destination cannot be the same as the origin')
     } else if (Number(gasPrice) < 1 || Number(budget) < Number(gasPrice)) {
       alert('You must specify a gas price and budget')
     } else if (!accounts.find(a => a.rawAddress === selected.holder) && !importedAccounts.find(a => a.rawAddress === selected.holder)) {
@@ -106,12 +108,12 @@ const SendTokenForm = ({
 
       if (importedAccounts.find(a => a.rawAddress === selected.holder)) {
         const { hash, egg } = await getPendingHash()
-        console.log(2, egg)
+        console.log('egg', 2, egg)
         setLoading('Please sign the transaction on your Ledger')
         const { ethHash, sig } = await signLedgerTransaction(removeDots(selected.holder), hash, egg)
         setLoading(null)
         if (sig) {
-          console.log(3, sig)
+          console.log('sig', 3, sig)
           await submitSignedHash(hash, ethHash, sig)
         } else {
           alert('There was an error signing the transaction with Ledger.')

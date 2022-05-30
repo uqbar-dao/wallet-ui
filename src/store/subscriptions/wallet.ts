@@ -30,8 +30,10 @@ export const handleBookUpdate = (get: GetState<WalletStore>, set: SetState<Walle
   set({ assets })
 }
 
-export const handleTxnUpdate = (get: GetState<WalletStore>, set: SetState<WalletStore>) => async (txn: Transaction) => {
-  console.log('TXN UPDATE:', JSON.stringify(txn))
+export const handleTxnUpdate = (get: GetState<WalletStore>, set: SetState<WalletStore>) => async (rawTxn: { [key: string]: Transaction }) => {
+  const txnHash = Object.keys(rawTxn)[0]
+  const txn = { ...rawTxn[txnHash], hash: txnHash }
+  console.log('TXN UPDATE:', txn)
   const { transactions } = get()
   // {"status":"submitted","hash":"0x7fbd.5f0e.13d5.24ea.8989.95d5.5051.a6f3.aeae.d01d.e0c3.79bf.10b9.0b49.9de3.eb10"}
   // {"status":"received","hash":"0x7fbd.5f0e.13d5.24ea.8989.95d5.5051.a6f3.aeae.d01d.e0c3.79bf.10b9.0b49.9de3.eb10"}
@@ -41,9 +43,9 @@ export const handleTxnUpdate = (get: GetState<WalletStore>, set: SetState<Wallet
   if (exists) {
     const newTransactions = transactions.map(t => ({ ...t, modified: t.hash === txn.hash ? new Date() : t.modified, status: Number(t.hash === txn.hash ? txn.status : t.status) }))
     set({ transactions: newTransactions })
-  } else {
+  } else if (txn.hash) {
     // TODO: make sure sent-to-us will show up in getTransactions 
-    set({ transactions: [{ ...txn, created: new Date(), modified: new Date() }].concat(transactions) })
+    set({ transactions: [{ ...txn, created: new Date(), modified: new Date() } as Transaction].concat(transactions) })
   }
 
   if (txn.status === 0) {

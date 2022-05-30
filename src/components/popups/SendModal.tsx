@@ -85,6 +85,7 @@ const SendModal = ({
     setSubmitted(false);
   }
 
+
   return (
     <Modal show={show} hide={hideModal} className='send-view'>
       <h4 style={{ marginTop: 0 }}>Send</h4>
