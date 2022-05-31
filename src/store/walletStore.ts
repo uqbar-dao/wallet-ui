@@ -3,13 +3,15 @@ import create from "zustand"
 import api from "../api"
 import { HotWallet, processAccount, RawAccount, HardwareWallet, HardwareWalletType, Seed } from "../types/Accounts"
 import { Token } from "../types/Token"
-import { SendNftPayload, SendRawTransactionPayload, SendTokenPayload, SendTransactionPayload } from "../types/SendTransaction"
+import { SendNftPayload, SendRawTransactionPayload, SendTokenPayload } from "../types/SendTransaction"
 import { handleBookUpdate, handleTxnUpdate } from "./subscriptions/wallet"
 import { RawTransactions, Transaction } from "../types/Transaction"
 import { TokenMetadataStore } from "../types/TokenMetadata"
 import { removeDots } from "../utils/format"
 import { deriveLedgerAddress, getLedgerAddress } from "../utils/ledger"
 import { addHexDots } from "../utils/number"
+import { mockData } from "../utils/constants"
+import { mockAccounts, mockAssets, mockMetadata, mockTransactions } from "../utils/mocks"
 // import { getLedgerAddress } from "../utils/ledger"
 
 export function createSubscription(app: string, path: string, e: (data: any) => void): SubscriptionRequestInterface {
@@ -66,9 +68,13 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   selectedTown: 0,
   transactions: [],
   init: async () => {
-    // Subscriptions, includes getting assets
-    api.subscribe(createSubscription('wallet', '/book-updates', handleBookUpdate(get, set)))
-    api.subscribe(createSubscription('wallet', '/tx-updates', handleTxnUpdate(get, set)))
+    if (mockData) {
+      set({ assets: mockAssets })
+    } else {
+      // Subscriptions, includes getting assets
+      api.subscribe(createSubscription('wallet', '/book-updates', handleBookUpdate(get, set)))
+      api.subscribe(createSubscription('wallet', '/tx-updates', handleTxnUpdate(get, set)))
+    }
 
     await Promise.all([
       get().getAccounts(),
@@ -81,6 +87,10 @@ const useWalletStore = create<WalletStore>((set, get) => ({
   },
   setLoading: (loadingText: string | null) => set({ loadingText }),
   getAccounts: async () => {
+    if (mockData) {
+      return set({ accounts: mockAccounts, importedAccounts: [], loadingText: null })
+    }
+
     const accountData = await api.scry<{[key: string]: RawAccount}>({ app: 'wallet', path: '/accounts' }) || {}
     const allAccounts = Object.values(accountData).map(processAccount).sort((a, b) => a.nick.localeCompare(b.nick))
 
@@ -97,15 +107,20 @@ const useWalletStore = create<WalletStore>((set, get) => ({
     set({ accounts, importedAccounts, loadingText: null })
   },
   getMetadata: async () => {
+    if (mockData) {
+      return set({ metadata: mockMetadata })
+    }
     const metadata = await api.scry<any>({ app: 'wallet', path: '/token-metadata' })
     set({ metadata })
   },
   getTransactions: async () => {
+    if (mockData) {
+      return set({ transactions: mockTransactions })
+    }
     const { accounts } = get()
     if (accounts.length) {
       const rawTransactions = await api.scry<RawTransactions>({ app: 'wallet', path: `/transactions/${accounts[0].rawAddress}` })
       const transactions = Object.keys(rawTransactions).map(hash => ({ ...rawTransactions[hash], hash }))
-      console.log('TRANSACTIONS:', transactions)
       set({ transactions })
     }
   },

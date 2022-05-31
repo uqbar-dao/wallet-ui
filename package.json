@@ -31,6 +31,7 @@
   "proxy": "http://localhost:8080",
   "scripts": {
     "start": "sed -i '' -e 's/compress: true/compress: false/' ./node_modules/react-scripts/config/webpackDevServer.config.js && react-app-rewired start",
+    "start:mock": "REACT_APP_MOCK_DATA=true yarn start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"

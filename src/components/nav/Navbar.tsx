@@ -7,7 +7,6 @@ import './Navbar.scss'
 import { isMobileCheck } from '../../utils/dimensions'
 import Text from '../text/Text'
 import useWalletStore from '../../store/walletStore'
-import { BASENAME } from '../../utils/constants'
 import { FaWallet, FaKey, FaHistory } from 'react-icons/fa'
 
 const Navbar = () => {
@@ -25,7 +24,7 @@ const Navbar = () => {
         <div className="nav-link logo">
           <img src={logo} alt="Uqbar Logo" />
         </div>
-        <Link className={`nav-link ${window.location.pathname === `${BASENAME}/` || window.location.pathname === BASENAME ? 'selected' : ''}`} href="/">
+        <Link className={`nav-link ${window.location.pathname === `${process.env.PUBLIC_URL}/` || window.location.pathname === process.env.PUBLIC_URL ? 'selected' : ''}`} href="/">
           {isMobile ? <FaWallet  /> : 'Assets'}
         </Link>
         <Link className={`nav-link ${window.location.pathname.includes('/accounts') ? 'selected' : ''}`} href="/accounts">

@@ -1,5 +1,3 @@
-export const BASENAME = '/apps/uqbar-wallet'
-
 export const STATUS_CODES : { [key: number] : string } = {
   0: 'confirmed',
   1: 'no account info',
@@ -16,3 +14,5 @@ export const STATUS_CODES : { [key: number] : string } = {
 }
 
 export const getStatus = (status: number) => STATUS_CODES[status] || 'unknown'
+
+export const mockData = process.env.NODE_ENV === 'development' && Boolean(process.env.REACT_APP_MOCK_DATA)

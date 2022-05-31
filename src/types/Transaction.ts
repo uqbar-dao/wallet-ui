@@ -12,6 +12,6 @@ export interface Transaction {
   budget: number
   nonce: number
   status: number
-  created: Date
-  modified: Date
+  created?: Date
+  modified?: Date
 }

@@ -26,7 +26,7 @@ export const handleBookUpdate = (get: GetState<WalletStore>, set: SetState<Walle
 
     assets[removeDots(account)].sort((a: Token, b: Token) => a.town - b.town)
   }
-  
+
   set({ assets })
 }
 

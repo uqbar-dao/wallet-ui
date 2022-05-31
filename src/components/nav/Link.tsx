@@ -1,5 +1,4 @@
 import React from 'react'
-import { BASENAME } from '../../utils/constants';
 import './Link.scss'
 
 interface LinkProps extends React.HTMLAttributes<HTMLAnchorElement> {
@@ -13,7 +12,7 @@ const Link: React.FC<LinkProps> = ({
   ...props
 }) => {
   return (
-    <a href={BASENAME + href} {...props} className={`link ${props.className || ''} ${type}`}>
+    <a href={process.env.PUBLIC_URL + href} {...props} className={`link ${props.className || ''} ${type}`}>
       {props.children}
     </a>
   )
