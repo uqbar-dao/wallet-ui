@@ -14,6 +14,12 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
+You must be running a ship with the %ziggurat suite and change the value of `"proxy": "http://localhost:8080"` in `package.json` to your ship's address.
+
+### `yarn start:mock`
+
+Runs the app in development mode with mock data, so there is no need to run a local ship.
+
 ### `yarn test`
 
 Launches the test runner in the interactive watch mode.\
