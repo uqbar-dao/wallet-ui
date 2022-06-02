@@ -35,8 +35,6 @@ export const handleTxnUpdate = (get: GetState<WalletStore>, set: SetState<Wallet
   const txn = { ...rawTxn[txnHash], hash: txnHash }
   console.log('TXN UPDATE:', txn)
   const { transactions } = get()
-  // {"status":"submitted","hash":"0x7fbd.5f0e.13d5.24ea.8989.95d5.5051.a6f3.aeae.d01d.e0c3.79bf.10b9.0b49.9de3.eb10"}
-  // {"status":"received","hash":"0x7fbd.5f0e.13d5.24ea.8989.95d5.5051.a6f3.aeae.d01d.e0c3.79bf.10b9.0b49.9de3.eb10"}
 
   const exists = transactions.find(({ hash }) => txn.hash === hash)
 
