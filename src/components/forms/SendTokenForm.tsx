@@ -72,19 +72,12 @@ const SendTokenForm = ({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    //if (!isNft && (!amount || !Number(amount))) {
-      //alert('You must enter an amount')
     if (selected?.balance && Number(amount) > selected?.balance) {
       alert(`You do not have that many tokens. You have ${selected.balance} tokens.`)
     } else if (!selected) {
       alert('You must select a \'from\' account')
-    //} else if (!destination) {
-      // TODO: validate the destination address
-      // alert('You must specify a destination address')
     } else if (removeDots(destination) === removeDots(selected.holder)) {
       alert('Destination cannot be the same as the origin')
-    //} else if (Number(gasPrice) < 1 || Number(budget) < Number(gasPrice)) {
-      // alert('You must specify a gas price and budget')
     } else if (!accounts.find(a => a.rawAddress === selected.holder) && !importedAccounts.find(a => a.rawAddress === selected.holder)) {
       alert('You do not have this account, did you remove a hardware wallet account?')
     } else {
