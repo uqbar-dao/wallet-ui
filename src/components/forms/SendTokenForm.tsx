@@ -72,19 +72,19 @@ const SendTokenForm = ({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!isNft && (!amount || !Number(amount))) {
-      alert('You must enter an amount')
-    } else if (selected?.balance && Number(amount) > selected?.balance) {
+    //if (!isNft && (!amount || !Number(amount))) {
+      //alert('You must enter an amount')
+    if (selected?.balance && Number(amount) > selected?.balance) {
       alert(`You do not have that many tokens. You have ${selected.balance} tokens.`)
     } else if (!selected) {
       alert('You must select a \'from\' account')
-    } else if (!destination) {
+    //} else if (!destination) {
       // TODO: validate the destination address
-      alert('You must specify a destination address')
+      // alert('You must specify a destination address')
     } else if (removeDots(destination) === removeDots(selected.holder)) {
       alert('Destination cannot be the same as the origin')
-    } else if (Number(gasPrice) < 1 || Number(budget) < Number(gasPrice)) {
-      alert('You must specify a gas price and budget')
+    //} else if (Number(gasPrice) < 1 || Number(budget) < Number(gasPrice)) {
+      // alert('You must specify a gas price and budget')
     } else if (!accounts.find(a => a.rawAddress === selected.holder) && !importedAccounts.find(a => a.rawAddress === selected.holder)) {
       alert('You do not have this account, did you remove a hardware wallet account?')
     } else {
@@ -142,36 +142,40 @@ const SendTokenForm = ({
       )}
       <Input
         label="To:"
-        containerStyle={{ marginTop: 12, width: '100%' }}
         placeholder='Destination address'
+        style={{ width: 'calc(100% - 24px)' }}
+        containerStyle={{ marginTop: 12, width: '100%' }}
         value={destination}
         onChange={(e: any) => setDestination(e.target.value)}
-        style={{ width: 'calc(100% - 24px)' }}
+        required //delete line 81 & 83
       />
       {!isNft && <Input
         label="Amount:"
-        containerStyle={{ marginTop: 12, width: '100%' }}
-        style={{ width: 'calc(100% - 24px)' }}
-        value={amount}
         placeholder="Amount"
+        style={{ width: 'calc(100% - 24px)' }}
+        containerStyle={{ marginTop: 12, width: '100%' }}
+        value={amount}
         onChange={(e: any) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+        required //delete line 75 & 76
       />}
       <Row style={{ justifyContent: 'space-between' }}>
         <Input
           label="Gas Price:"
-          containerStyle={{ marginTop: 12 }}
-          style={{ width: 'calc(100% - 22px)' }}
-          value={gasPrice}
           placeholder="Gas price"
+          style={{ width: 'calc(100% - 22px)' }}
+          containerStyle={{ marginTop: 12 }}
+          value={gasPrice}
           onChange={(e: any) => setGasPrice(e.target.value.replace(/[^0-9.]/g, ''))}
+          required // delete line 86 & 87
         />
         <Input
           label="Budget:"
-          containerStyle={{ marginTop: 12, marginLeft: 8 }}
-          style={{ width: 'calc(100% - 22px)' }}
-          value={budget}
           placeholder="Budget"
+          style={{ width: 'calc(100% - 22px)' }}
+          containerStyle={{ marginTop: 12, marginLeft: 8 }}
+          value={budget}
           onChange={(e: any) => setBudget(e.target.value.replace(/[^0-9.]/g, ''))}
+          required // delete line 86 & 87
         />
       </Row>
       <Button style={{ width: '100%', margin: '16px 0px 8px' }} type="submit" variant='dark' onClick={submit}>
